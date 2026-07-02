@@ -55,7 +55,7 @@ include __DIR__ . '/includes/header.php';
         </div>
       </div>
       <!-- Hero impact panel (hidden on small mobile) -->
-      <div class="hero-panel">
+      <!-- <div class="hero-panel">
         <p class="hero-panel-label">Platform Impact</p>
         <div class="hero-stat-grid">
           <div class="hero-stat-tile">
@@ -90,7 +90,7 @@ include __DIR__ . '/includes/header.php';
         <a href="/chama/campaign-drives.php" class="hero-panel-link">
           <i class="fas fa-th-large"></i> Browse All Campaigns <i class="fas fa-arrow-right"></i>
         </a>
-      </div>
+      </div> -->
     </div>
   </div>
 </section>
