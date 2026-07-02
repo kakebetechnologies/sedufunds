@@ -1,162 +1,146 @@
 ﻿<?php
 // ============================================================
 // ChamaFunds – api/auth.php
-// Handles login, signup, logout (JSON + redirect)
+// Handles login and registration via AJAX
 // ============================================================
 
 if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db/connection.php';
 
-$conn = require_once __DIR__ . '/../db/connection.php';
+// Set JSON response header
+header('Content-Type: application/json');
 
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+$action = $_GET['action'] ?? '';
 
-// ── LOGOUT ──────────────────────────────────────────────────
-if ($action === 'logout') {
-    $_SESSION = [];
-    session_destroy();
-    require_once __DIR__ . '/../includes/config.php';
-    header('Location: ' . BASE . '/login.php?msg=logged_out');
-    exit;
-}
-
-// ── LOGIN ────────────────────────────────────────────────────
-if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
-
+if ($action === 'login') {
+    // Get form data
     $identifier = trim($_POST['identifier'] ?? '');
-    $password   = $_POST['password'] ?? '';
-
-    if (empty($identifier) || empty($password)) {
-        echo json_encode(['success' => false, 'message' => 'Email/phone and password are required.']);
-        exit;
-    }
-
-    $identifier = $conn->real_escape_string($identifier);
-
-    $stmt = $conn->prepare(
-        "SELECT user_id, full_name, email, phone, password_hash, role, country, avatar_url, is_active, is_verified
-         FROM users
-         WHERE (email = ? OR phone = ?) LIMIT 1"
-    );
-    $stmt->bind_param('ss', $identifier, $identifier);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user   = $result->fetch_assoc();
-    $stmt->close();
-
-    if (!$user) {
-        echo json_encode(['success' => false, 'message' => 'No account found with those credentials.']);
-        exit;
-    }
-
-    if (!$user['is_active']) {
-        echo json_encode(['success' => false, 'message' => 'Your account has been suspended. Contact support.']);
-        exit;
-    }
-
-    if (!password_verify($password, $user['password_hash'])) {
-        echo json_encode(['success' => false, 'message' => 'Incorrect password.']);
-        exit;
-    }
-
-    // Update last login
-    $uid = $user['user_id'];
-    $conn->query("UPDATE users SET last_login = NOW() WHERE user_id = $uid");
-
-    // Store session
-    $_SESSION['user_id'] = $user['user_id'];
-    $_SESSION['role']    = $user['role'];
-    $_SESSION['user']    = [
-        'user_id'    => $user['user_id'],
-        'full_name'  => $user['full_name'],
-        'email'      => $user['email'],
-        'phone'      => $user['phone'],
-        'role'       => $user['role'],
-        'country'    => $user['country'],
-        'avatar_url' => $user['avatar_url'],
-        'is_verified'=> $user['is_verified'],
-    ];
-
-    $redirect = $user['role'] === 'admin' ? '/chama/admin/index.php' : '/chama/dashboard.php';
-    echo json_encode(['success' => true, 'redirect' => $redirect, 'role' => $user['role']]);
-    exit;
-}
-
-// ── REGISTER ─────────────────────────────────────────────────
-if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
-
-    $fullName = trim($_POST['full_name'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
-    $phone    = trim($_POST['phone'] ?? '');
     $password = $_POST['password'] ?? '';
-    $confirm  = $_POST['confirm_password'] ?? '';
-    $role     = in_array($_POST['role'] ?? '', ['campaigner', 'donor']) ? $_POST['role'] : 'donor';
-    $country  = trim($_POST['country'] ?? 'Uganda');
 
-    // Basic validation
-    if (empty($fullName) || empty($email) || empty($phone) || empty($password)) {
-        echo json_encode(['success' => false, 'message' => 'All fields are required.']);
-        exit;
-    }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid email address.']);
-        exit;
-    }
-    if (strlen($password) < 6) {
-        echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters.']);
-        exit;
-    }
-    if ($password !== $confirm) {
-        echo json_encode(['success' => false, 'message' => 'Passwords do not match.']);
+    // Validate input
+    if (empty($identifier) || empty($password)) {
+        echo json_encode(['success' => false, 'message' => 'Please enter both email/phone and password.']);
         exit;
     }
 
-    // Check duplicate
-    $emailEsc = $conn->real_escape_string($email);
-    $phoneEsc = $conn->real_escape_string($phone);
-    $existing = $conn->query("SELECT user_id FROM users WHERE email='$emailEsc' OR phone='$phoneEsc' LIMIT 1");
-    if ($existing->num_rows > 0) {
-        echo json_encode(['success' => false, 'message' => 'An account with that email or phone already exists.']);
-        exit;
+    // Check if identifier is email or phone
+    $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
+    
+    if ($isEmail) {
+        $sql = "SELECT * FROM users WHERE email = '" . mysqli_real_escape_string($conn, $identifier) . "' AND is_active = 1";
+    } else {
+        // Clean phone number
+        $phone = preg_replace('/[^0-9]/', '', $identifier);
+        $sql = "SELECT * FROM users WHERE phone = '" . mysqli_real_escape_string($conn, $phone) . "' AND is_active = 1";
     }
 
-    $hash        = password_hash($password, PASSWORD_BCRYPT);
-    $fullNameEsc = $conn->real_escape_string($fullName);
-    $countryEsc  = $conn->real_escape_string($country);
-    $hashEsc     = $conn->real_escape_string($hash);
+    $result = mysqli_query($conn, $sql);
+    $user = mysqli_fetch_assoc($result);
 
-    $conn->query(
-        "INSERT INTO users (full_name, email, phone, password_hash, role, country, is_active, is_verified)
-         VALUES ('$fullNameEsc', '$emailEsc', '$phoneEsc', '$hashEsc', '$role', '$countryEsc', 1, 0)"
-    );
-    $newId = $conn->insert_id;
+    // Verify password
+    if ($user && password_verify($password, $user['password_hash'])) {
+        // Login successful
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['user'] = [
+            'user_id' => $user['user_id'],
+            'full_name' => $user['full_name'],
+            'email' => $user['email'],
+            'phone' => $user['phone'],
+            'role' => $user['role'],
+            'avatar_url' => $user['avatar_url'] ?? ''
+        ];
 
-    // Auto-login
-    $_SESSION['user_id'] = $newId;
-    $_SESSION['role']    = $role;
-    $_SESSION['user']    = [
-        'user_id'    => $newId,
-        'full_name'  => $fullName,
-        'email'      => $email,
-        'phone'      => $phone,
-        'role'       => $role,
-        'country'    => $country,
-        'avatar_url' => '',
-        'is_verified'=> false,
-    ];
+        // Update last login
+        mysqli_query($conn, "UPDATE users SET last_login = NOW() WHERE user_id = " . $user['user_id']);
 
-    echo json_encode(['success' => true, 'redirect' => '/chama/dashboard.php']);
+        // Determine redirect
+        if ($user['role'] === 'admin') {
+            $redirect = '/admin/index.php';
+        } else {
+            $redirect = '/dashboard.php';
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Login successful!',
+            'redirect' => BASE . $redirect,
+            'role' => $user['role']
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid email/phone or password.']);
+    }
     exit;
 }
 
-// ── DB STATUS (used by index.php for connection ping) ─────────
-if ($action === 'ping') {
-    header('Content-Type: application/json');
-    $ok = ($conn && !$conn->connect_error);
-    echo json_encode(['success' => $ok, 'message' => $ok ? 'Database connected successfully!' : 'Connection failed.']);
+if ($action === 'register') {
+    // Get form data
+    $full_name = trim($_POST['full_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? 'donor';
+    $country = $_POST['country'] ?? 'Uganda';
+
+    // Validate
+    $errors = [];
+    if (empty($full_name)) $errors[] = 'Full name is required';
+    if (empty($email)) $errors[] = 'Email is required';
+    if (empty($phone)) $errors[] = 'Phone number is required';
+    if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters';
+
+    if (!empty($errors)) {
+        echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
+        exit;
+    }
+
+    // Check if email exists
+    $check = "SELECT user_id FROM users WHERE email = '" . mysqli_real_escape_string($conn, $email) . "'";
+    $result = mysqli_query($conn, $check);
+    if (mysqli_num_rows($result) > 0) {
+        echo json_encode(['success' => false, 'message' => 'Email already registered.']);
+        exit;
+    }
+
+    // Check if phone exists
+    $check = "SELECT user_id FROM users WHERE phone = '" . mysqli_real_escape_string($conn, $phone) . "'";
+    $result = mysqli_query($conn, $check);
+    if (mysqli_num_rows($result) > 0) {
+        echo json_encode(['success' => false, 'message' => 'Phone number already registered.']);
+        exit;
+    }
+
+    // Hash password
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+    // Insert user
+    $sql = "INSERT INTO users (full_name, email, phone, password_hash, role, country, is_active, is_verified, created_at) 
+            VALUES (
+                '" . mysqli_real_escape_string($conn, $full_name) . "',
+                '" . mysqli_real_escape_string($conn, $email) . "',
+                '" . mysqli_real_escape_string($conn, $phone) . "',
+                '" . mysqli_real_escape_string($conn, $password_hash) . "',
+                '" . mysqli_real_escape_string($conn, $role) . "',
+                '" . mysqli_real_escape_string($conn, $country) . "',
+                1,
+                1,
+                NOW()
+            )";
+
+    if (mysqli_query($conn, $sql)) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Account created successfully! Please log in.',
+            'redirect' => BASE . '/login.php?registered=true'
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
+    }
     exit;
 }
 
-http_response_code(400);
+// Fallback for unknown action
 echo json_encode(['success' => false, 'message' => 'Invalid action.']);
+exit;
+?>
