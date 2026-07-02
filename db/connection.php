@@ -25,3 +25,9 @@ try {
 
 // Make connection available globally
 return $conn;
+
+//Database connections
+// $host     = 'localhost';
+// $username = 'u850523537_VPS';
+// $password = '@Kt2026#Kakebe';
+// $database = 'u850523537_chamafundsDB';
