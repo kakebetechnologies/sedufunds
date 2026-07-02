@@ -11,7 +11,7 @@ $pageDescription = 'Uganda\'s leading mobile money crowdfunding platform. Create
 // DB connection status for popup
 $dbConnected = ($conn && !$conn->connect_error);
 
-// Fetch featured / active campaigns for home grid
+// Fetch featured / active campaigns for home grid (top 4 only)
 $featured = $conn->query(
     "SELECT c.*, u.full_name AS campaigner_name,
             ROUND((c.raised_amount / c.goal_amount) * 100, 1) AS pct,
@@ -20,7 +20,7 @@ $featured = $conn->query(
      JOIN users u ON c.campaigner_id = u.user_id
      WHERE c.status = 'active'
      ORDER BY c.is_featured DESC, c.created_at DESC
-     LIMIT 8"
+     LIMIT 4"
 );
 
 // Platform stats
@@ -32,10 +32,11 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
-<section class="hero-gradient" style="padding:120px 0 80px;overflow:hidden;margin-top:64px;">
+<section class="hero-gradient hero-section" style="padding:120px 0 80px;overflow:hidden;margin-top:64px;">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
-      <div>
+    <div class="hero-inner">
+      <!-- Left: copy -->
+      <div class="hero-copy">
         <div class="hero-badge"><i class="fas fa-bolt" style="color:#facc15"></i> Built for African Causes</div>
         <h1 style="font-size:clamp(2rem,5vw,3.4rem);font-weight:800;line-height:1.15;color:#fff;margin-bottom:20px;">
           Pool Money Together for<br>
@@ -45,8 +46,8 @@ include __DIR__ . '/includes/header.php';
           Launch a campaign or donate to causes you care about. Transparent, secure, and built for mobile money.
         </p>
         <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:32px;">
-          <a href="/chama/create-campaign.php" class="btn btn-primary btn-lg">Start a Campaign</a>
-          <a href="/chama/donate.php" class="btn btn-outline-white btn-lg">Donate Now</a>
+          <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary btn-lg">Start a Campaign</a>
+          <a href="<?= BASE ?>/donate.php" class="btn btn-outline-white btn-lg">Donate Now</a>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:20px;font-size:.85rem;color:rgba(255,255,255,.7);">
           <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Free to start</span>
@@ -54,38 +55,43 @@ include __DIR__ . '/includes/header.php';
           <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Live tracking</span>
         </div>
       </div>
-      <!-- Hero stats card -->
-      <div style="display:flex;justify-content:center;">
-        <div style="position:relative;width:100%;max-width:340px;">
-          <div style="background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border-radius:24px;padding:24px;border:1px solid rgba(255,255,255,.2);box-shadow:0 20px 60px rgba(0,0,0,.25);">
-            <div style="background:#fff;border-radius:16px;padding:20px;">
-              <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;padding-bottom:14px;margin-bottom:14px;">
-                <div style="width:44px;height:44px;background:#1A2A6C;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.75rem;">CF</div>
-                <div>
-                  <p style="font-weight:800;color:#1A2A6C;font-size:.95rem;">Live Platform Stats</p>
-                  <p style="font-size:.75rem;color:#9ca3af;">Updated in real-time</p>
-                </div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:10px;font-size:.85rem;">
-                <div style="display:flex;justify-content:space-between;">
-                  <span style="color:#6b7280;">Active Campaigns</span>
-                  <strong style="color:#1A2A6C;"><?= number_format($activeCampaigns) ?></strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;">
-                  <span style="color:#6b7280;">Total Raised</span>
-                  <strong style="color:#10b981;">UGX <?= number_format($totalRaised) ?></strong>
-                </div>
-                <div style="display:flex;justify-content:space-between;">
-                  <span style="color:#6b7280;">Contributors</span>
-                  <strong style="color:#1A2A6C;"><?= number_format($totalContributors) ?></strong>
-                </div>
-              </div>
+
+      <!-- Right: impact stats tiles -->
+      <div class="hero-stats-panel">
+        <p style="font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:16px;">Platform Impact</p>
+        <div class="hero-stat-grid">
+          <div class="hero-stat-tile">
+            <span class="hero-stat-icon" style="background:rgba(250,204,21,.15);color:#facc15;"><i class="fas fa-hand-holding-heart"></i></span>
+            <div>
+              <p class="hero-stat-value">UGX <?= number_format($totalRaised) ?></p>
+              <p class="hero-stat-label">Total Raised</p>
             </div>
           </div>
-          <div style="position:absolute;top:-12px;right:-12px;background:#fff;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:8px 14px;font-size:.75rem;font-weight:700;color:#1A2A6C;display:flex;align-items:center;gap:6px;">
-            <i class="fas fa-bolt" style="color:#facc15;"></i> Live
+          <div class="hero-stat-tile">
+            <span class="hero-stat-icon" style="background:rgba(110,231,183,.15);color:#6ee7b7;"><i class="fas fa-rocket"></i></span>
+            <div>
+              <p class="hero-stat-value"><?= number_format($activeCampaigns) ?></p>
+              <p class="hero-stat-label">Active Campaigns</p>
+            </div>
+          </div>
+          <div class="hero-stat-tile">
+            <span class="hero-stat-icon" style="background:rgba(147,197,253,.15);color:#93c5fd;"><i class="fas fa-users"></i></span>
+            <div>
+              <p class="hero-stat-value"><?= number_format($totalContributors) ?></p>
+              <p class="hero-stat-label">Contributors</p>
+            </div>
+          </div>
+          <div class="hero-stat-tile">
+            <span class="hero-stat-icon" style="background:rgba(255,107,74,.15);color:#FF6B4A;"><i class="fas fa-mobile-alt"></i></span>
+            <div>
+              <p class="hero-stat-value">100%</p>
+              <p class="hero-stat-label">Mobile Money</p>
+            </div>
           </div>
         </div>
+        <a href="<?= BASE ?>/campaign-drives.php" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding:12px;background:rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.15);transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+          <i class="fas fa-th-large"></i> Browse All Campaigns <i class="fas fa-arrow-right" style="font-size:.75rem;"></i>
+        </a>
       </div>
     </div>
   </div>
@@ -142,7 +148,7 @@ include __DIR__ . '/includes/header.php';
       <h2 class="section-title">Active Campaign Drives</h2>
       <p class="section-sub">Real campaigns, real people, real impact.</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+    <div class="home-campaigns-grid">
       <?php if ($featured && $featured->num_rows > 0): ?>
         <?php while ($c = $featured->fetch_assoc()): ?>
           <?php
@@ -152,7 +158,7 @@ include __DIR__ . '/includes/header.php';
             $catClass = 'badge-' . strtolower($c['category']);
             $image    = $c['image_url'] ?: 'https://picsum.photos/seed/' . $c['slug'] . '/600/400';
           ?>
-          <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
+          <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
             <img class="card-img" src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($c['title']) ?>" loading="lazy" />
             <div class="card-body">
               <div class="campaign-meta">
@@ -173,14 +179,14 @@ include __DIR__ . '/includes/header.php';
           </a>
         <?php endwhile; ?>
       <?php else: ?>
-        <div style="grid-column:span 4;text-align:center;padding:60px 0;color:#9ca3af;">
+        <div class="no-campaigns-msg">
           <i class="fas fa-rocket" style="font-size:3rem;margin-bottom:16px;display:block;"></i>
-          No active campaigns yet. <a href="/chama/create-campaign.php" style="color:#FF6B4A;font-weight:700;">Be the first!</a>
+          No active campaigns yet. <a href="<?= BASE ?>/create-campaign.php" style="color:#FF6B4A;font-weight:700;">Be the first!</a>
         </div>
       <?php endif; ?>
     </div>
     <div style="text-align:center;margin-top:36px;">
-      <a href="/chama/campaign-drives.php" class="btn btn-outline">More Campaigns <i class="fas fa-arrow-right" style="margin-left:6px;"></i></a>
+      <a href="<?= BASE ?>/campaign-drives.php" class="btn btn-outline">More Campaigns <i class="fas fa-arrow-right" style="margin-left:6px;"></i></a>
     </div>
   </div>
 </section>
