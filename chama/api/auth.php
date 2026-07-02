@@ -14,7 +14,8 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 if ($action === 'logout') {
     $_SESSION = [];
     session_destroy();
-    header('Location: <?= BASE ?>/login.php?msg=logged_out');
+    require_once __DIR__ . '/../includes/config.php';
+    header('Location: ' . BASE . '/login.php?msg=logged_out');
     exit;
 }
 
