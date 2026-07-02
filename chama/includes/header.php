@@ -72,6 +72,10 @@ $userAvatar  = $_SESSION['user']['avatar_url'] ?? '';
 <div class="mobile-menu-overlay" id="menuOverlay"></div>
 <div class="mobile-menu" id="mobileMenu">
   <button class="mobile-menu-close" id="menuClose"><i class="fas fa-times"></i></button>
+  <a href="<?= BASE ?>/index.php" class="mobile-menu-brand">
+    <div class="navbar-logo" style="width:34px;height:34px;font-size:.75rem;">CF</div>
+    <span style="font-weight:800;color:var(--navy);font-size:1rem;">ChamaFunds</span>
+  </a>
   <a href="<?= BASE ?>/campaign-drives.php">Campaign Drives</a>
   <a href="<?= BASE ?>/donate.php">Donate</a>
   <a href="<?= BASE ?>/index.php#how-it-works">How It Works</a>
@@ -83,6 +87,6 @@ $userAvatar  = $_SESSION['user']['avatar_url'] ?? '';
     <a href="<?= BASE ?>/api/auth.php?action=logout" style="color:#ef4444;">Logout</a>
   <?php else: ?>
     <a href="<?= BASE ?>/login.php">Log In</a>
-    <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary">Start a Campaign</a>
+    <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary mobile-menu-cta">Start a Campaign</a>
   <?php endif; ?>
 </div>
