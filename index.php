@@ -1,0 +1,232 @@
+<?php
+// ============================================================
+// ChamaFunds – index.php  (Home page)
+// ============================================================
+if (session_status() === PHP_SESSION_NONE) session_start();
+$conn = require_once __DIR__ . '/db/connection.php';
+
+$pageTitle       = 'ChamaFunds – Mobile Money Crowdfunding in Uganda';
+$pageDescription = 'Uganda\'s leading mobile money crowdfunding platform. Create campaigns, donate to causes, and receive funds via MTN & Airtel Money.';
+
+// DB connection status for popup
+$dbConnected = ($conn && !$conn->connect_error);
+
+// Fetch featured / active campaigns for home grid
+$featured = $conn->query(
+    "SELECT c.*, u.full_name AS campaigner_name,
+            ROUND((c.raised_amount / c.goal_amount) * 100, 1) AS pct,
+            DATEDIFF(c.end_date, NOW()) AS days_left
+     FROM campaigns c
+     JOIN users u ON c.campaigner_id = u.user_id
+     WHERE c.status = 'active'
+     ORDER BY c.is_featured DESC, c.created_at DESC
+     LIMIT 8"
+);
+
+// Platform stats
+$totalRaised      = $conn->query("SELECT COALESCE(SUM(amount),0) FROM donations WHERE status='completed'")->fetch_row()[0];
+$activeCampaigns  = $conn->query("SELECT COUNT(*) FROM campaigns WHERE status='active'")->fetch_row()[0];
+$totalContributors= $conn->query("SELECT COUNT(DISTINCT donor_phone) FROM donations WHERE status='completed'")->fetch_row()[0];
+
+include __DIR__ . '/includes/header.php';
+?>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section class="hero-gradient" style="padding:120px 0 80px;overflow:hidden;margin-top:64px;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <div>
+        <div class="hero-badge"><i class="fas fa-bolt" style="color:#facc15"></i> Built for African Causes</div>
+        <h1 style="font-size:clamp(2rem,5vw,3.4rem);font-weight:800;line-height:1.15;color:#fff;margin-bottom:20px;">
+          Pool Money Together for<br>
+          <span style="color:#facc15;">What Matters Most</span>
+        </h1>
+        <p style="font-size:1.05rem;color:rgba(255,255,255,.82);max-width:480px;line-height:1.7;margin-bottom:32px;">
+          Launch a campaign or donate to causes you care about. Transparent, secure, and built for mobile money.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:32px;">
+          <a href="/chama/create-campaign.php" class="btn btn-primary btn-lg">Start a Campaign</a>
+          <a href="/chama/donate.php" class="btn btn-outline-white btn-lg">Donate Now</a>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:20px;font-size:.85rem;color:rgba(255,255,255,.7);">
+          <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Free to start</span>
+          <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Same-day payout</span>
+          <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Live tracking</span>
+        </div>
+      </div>
+      <!-- Hero stats card -->
+      <div style="display:flex;justify-content:center;">
+        <div style="position:relative;width:100%;max-width:340px;">
+          <div style="background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border-radius:24px;padding:24px;border:1px solid rgba(255,255,255,.2);box-shadow:0 20px 60px rgba(0,0,0,.25);">
+            <div style="background:#fff;border-radius:16px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;padding-bottom:14px;margin-bottom:14px;">
+                <div style="width:44px;height:44px;background:#1A2A6C;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.75rem;">CF</div>
+                <div>
+                  <p style="font-weight:800;color:#1A2A6C;font-size:.95rem;">Live Platform Stats</p>
+                  <p style="font-size:.75rem;color:#9ca3af;">Updated in real-time</p>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:.85rem;">
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:#6b7280;">Active Campaigns</span>
+                  <strong style="color:#1A2A6C;"><?= number_format($activeCampaigns) ?></strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:#6b7280;">Total Raised</span>
+                  <strong style="color:#10b981;">UGX <?= number_format($totalRaised) ?></strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:#6b7280;">Contributors</span>
+                  <strong style="color:#1A2A6C;"><?= number_format($totalContributors) ?></strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="position:absolute;top:-12px;right:-12px;background:#fff;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:8px 14px;font-size:.75rem;font-weight:700;color:#1A2A6C;display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-bolt" style="color:#facc15;"></i> Live
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-bar-inner">
+      <span class="trust-badge"><i class="fas fa-check-circle" style="color:#10b981;"></i>Licensed Payment Partner</span>
+      <span class="trust-badge"><i class="fas fa-globe-africa" style="color:#1A2A6C;"></i>12 Countries Live</span>
+      <span class="trust-badge"><i class="fas fa-mobile-alt" style="color:#FF6B4A;"></i>100% Mobile Money</span>
+      <span class="trust-badge"><i class="fas fa-chart-line" style="color:#3b82f6;"></i>Live Tracking</span>
+      <span class="trust-badge"><i class="fas fa-shield-alt" style="color:#10b981;"></i>MTN · Airtel · Orange</span>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works" style="background:#f9fafb;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Simple Process</span>
+      <h2 class="section-title">Three Simple Steps. Ninety Seconds.</h2>
+      <p class="section-sub">Create, share, and receive — all in under two minutes.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="card step-card">
+        <div class="step-icon-wrap">1</div>
+        <h3 style="font-weight:800;color:#1A2A6C;font-size:1.1rem;margin-bottom:10px;">Create a Campaign</h3>
+        <p style="color:#6b7280;font-size:.9rem;line-height:1.7;">Set up your campaign in 60 seconds. Add details, set your goal, and get a shareable link instantly.</p>
+        <p style="margin-top:12px;font-size:.78rem;font-weight:700;color:#FF6B4A;">FREE to start</p>
+      </div>
+      <div class="card step-card">
+        <div class="step-icon-wrap">2</div>
+        <h3 style="font-weight:800;color:#1A2A6C;font-size:1.1rem;margin-bottom:10px;">Share with Your People</h3>
+        <p style="color:#6b7280;font-size:.9rem;line-height:1.7;">Post your link on WhatsApp, social media, or anywhere. No account needed to contribute.</p>
+      </div>
+      <div class="card step-card">
+        <div class="step-icon-wrap">3</div>
+        <h3 style="font-weight:800;color:#1A2A6C;font-size:1.1rem;margin-bottom:10px;">Grow &amp; Receive Funds</h3>
+        <p style="color:#6b7280;font-size:.9rem;line-height:1.7;">Watch contributions come in live and withdraw funds to mobile money — same day.</p>
+        <p style="margin-top:12px;font-size:.78rem;font-weight:700;color:#10b981;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Same-day payout</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE CAMPAIGNS -->
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Live Now</span>
+      <h2 class="section-title">Active Campaign Drives</h2>
+      <p class="section-sub">Real campaigns, real people, real impact.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+      <?php if ($featured && $featured->num_rows > 0): ?>
+        <?php while ($c = $featured->fetch_assoc()): ?>
+          <?php
+            $pct      = min(100, (float)$c['pct']);
+            $daysLeft = (int)$c['days_left'];
+            $daysStr  = $daysLeft > 0 ? "$daysLeft days left" : ($daysLeft === 0 ? 'Ends today' : 'Ended');
+            $catClass = 'badge-' . strtolower($c['category']);
+            $image    = $c['image_url'] ?: 'https://picsum.photos/seed/' . $c['slug'] . '/600/400';
+          ?>
+          <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
+            <img class="card-img" src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($c['title']) ?>" loading="lazy" />
+            <div class="card-body">
+              <div class="campaign-meta">
+                <span class="category-badge <?= $catClass ?>"><?= htmlspecialchars($c['category']) ?></span>
+                <span class="days-left" <?= $daysLeft <= 3 ? 'style="color:#ef4444;"' : '' ?>><?= htmlspecialchars($daysStr) ?></span>
+              </div>
+              <p class="campaign-title"><?= htmlspecialchars($c['title']) ?></p>
+              <div class="campaign-stats">
+                <span><?= $c['currency'] ?> <?= number_format($c['raised_amount']) ?> raised</span>
+                <span style="font-weight:700;color:#1A2A6C;"><?= $pct ?>%</span>
+              </div>
+              <div class="progress-wrap"><div class="progress-fill" data-width="<?= $pct ?>%"></div></div>
+              <div class="campaign-footer">
+                <span class="contributors-count"><i class="fas fa-users" style="margin-right:4px;"></i><?= $c['contributor_count'] ?></span>
+                <span class="btn btn-primary btn-sm">Donate</span>
+              </div>
+            </div>
+          </a>
+        <?php endwhile; ?>
+      <?php else: ?>
+        <div style="grid-column:span 4;text-align:center;padding:60px 0;color:#9ca3af;">
+          <i class="fas fa-rocket" style="font-size:3rem;margin-bottom:16px;display:block;"></i>
+          No active campaigns yet. <a href="/chama/create-campaign.php" style="color:#FF6B4A;font-weight:700;">Be the first!</a>
+        </div>
+      <?php endif; ?>
+    </div>
+    <div style="text-align:center;margin-top:36px;">
+      <a href="/chama/campaign-drives.php" class="btn btn-outline">More Campaigns <i class="fas fa-arrow-right" style="margin-left:6px;"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" style="background:#fff;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2 class="section-title">Questions, Answered.</h2>
+    </div>
+    <div>
+      <div class="faq-item">
+        <button class="faq-question">What makes ChamaFunds different? <span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">ChamaFunds is built specifically for African mobile money ecosystems, working natively with MTN, Airtel and more.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">How do I know my contribution reaches the right person? <span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Every contribution is logged on a live public ledger. Funds are disbursed directly to the campaign creator's verified mobile money number.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">What fees does ChamaFunds charge? <span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">We charge a 7.5% platform transaction fee per contribution at withdrawal. Creating a campaign is always free.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">How long does it take to receive funds? <span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Withdrawals are processed same-day during business hours (8am–6pm local time). Funds land on your mobile money within minutes of approval.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>
+
+<script>
+// ── DB Connection popup on page load ─────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var dbOk = <?= $dbConnected ? 'true' : 'false' ?>;
+  var shown = sessionStorage.getItem('cf_db_ping_shown');
+  if (!shown) {
+    sessionStorage.setItem('cf_db_ping_shown', '1');
+    if (dbOk) {
+      window.showToast('✅ Database connected successfully!', 'success');
+    } else {
+      window.showToast('❌ Database connection failed!', 'error');
+    }
+  }
+});
+</script>

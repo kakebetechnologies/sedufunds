@@ -1,0 +1,5 @@
+{
+    "require": {
+        "emleons/pesapal-php": "^1.0"
+    }
+}
