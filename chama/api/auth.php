@@ -6,10 +6,23 @@
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../includes/config.php';
-$conn = require_once __DIR__ . '/../db/connection.php';
 
-// Set JSON response header
+// Set JSON response header early so errors also return JSON
 header('Content-Type: application/json');
+
+// Catch DB connection failures gracefully
+try {
+    $conn = require_once __DIR__ . '/../db/connection.php';
+} catch (Throwable $e) {
+    echo json_encode(['success' => false, 'message' => 'DB connection failed: ' . $e->getMessage()]);
+    exit;
+}
+
+// If $conn came back as boolean true (already required), grab it differently
+if ($conn === true || !($conn instanceof mysqli)) {
+    echo json_encode(['success' => false, 'message' => 'DB connection object not returned. Check db/connection.php.']);
+    exit;
+}
 
 $action = $_GET['action'] ?? '';
 

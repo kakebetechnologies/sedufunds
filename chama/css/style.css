@@ -709,7 +709,19 @@ a.campaign-card .btn {
   .auth-card { padding: 28px 20px; }
   .hero-panel { display: none; }  /* hide panel on small phones — copy alone is clean */
   .hero-trust-row { gap: 12px; }
-  .hero-cta-row .btn-lg { padding: 13px 28px; font-size: .95rem; }
+
+  /* ── Hero CTA buttons — stack vertically, full width, comfortable tap targets ── */
+  .hero-cta-row {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .hero-cta-row .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 24px;
+    font-size: 1rem;
+  }
 }
 
 /* ── Print ──────────────────────────────────────────────────── */
