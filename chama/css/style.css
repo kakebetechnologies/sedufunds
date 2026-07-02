@@ -240,25 +240,12 @@ input, select, textarea { font-family: inherit; }
 .contributors-count { font-size: .78rem; color: var(--gray-400); }
 .days-left { font-size: .78rem; color: var(--coral); font-weight: 600; }
 
-/* ── Campaign Grid (campaign-drives page) ───────────────────── */
+/* ── Campaign Grid ──────────────────────────────────────────── */
 .campaigns-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
-.home-campaigns-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-.no-campaigns-msg {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 0;
-  color: var(--gray-400);
-}
-
-/* ── Home Campaigns Grid breakpoints are in the @media blocks below ── */
 
 /* ── Form Inputs ────────────────────────────────────────────── */
 .form-group { margin-bottom: 20px; }
@@ -330,55 +317,6 @@ textarea.form-input { resize: vertical; min-height: 120px; }
   background: rgba(255,255,255,.18); backdrop-filter: blur(4px);
   padding: 6px 16px; border-radius: 99px; font-size: .82rem; font-weight: 600;
   margin-bottom: 20px;
-}
-
-/* Hero two-col layout */
-.hero-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  align-items: center;
-}
-.hero-copy { }
-.hero-stats-panel {
-  background: rgba(255,255,255,.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 24px;
-  padding: 28px;
-}
-.hero-stat-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.hero-stat-tile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255,255,255,.08);
-  border-radius: 14px;
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-}
-.hero-stat-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; flex-shrink: 0;
-}
-.hero-stat-value {
-  font-size: .95rem; font-weight: 800; color: #fff;
-  line-height: 1.2; word-break: break-all;
-}
-.hero-stat-label {
-  font-size: .7rem; color: rgba(255,255,255,.6); margin-top: 2px;
-}
-
-@media (max-width: 480px) {
-  .hero-section { padding: 96px 0 60px !important; }
-  .hero-stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hero-stat-tile { padding: 10px; gap: 8px; }
-  .hero-stat-value { font-size: .82rem; }
 }
 
 /* ── Trust Badge Bar ────────────────────────────────────────── */
@@ -679,30 +617,24 @@ a.campaign-card .btn {
   .mobile-menu { display: flex; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .campaigns-grid { grid-template-columns: repeat(2, 1fr); }
-  .home-campaigns-grid { grid-template-columns: repeat(2, 1fr); }
   .steps-grid { grid-template-columns: 1fr; gap: 16px; }
   .sidebar, .admin-sidebar { display: none; }
   .sidebar.mobile-open, .admin-sidebar.mobile-open { display: flex; position: fixed; left: 0; top: 0; bottom: 0; z-index: 900; }
   .admin-main, .main-content { padding: 16px; }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .hero-inner { grid-template-columns: 1fr; gap: 36px; }
-  .hero-stats-panel { max-width: 480px; margin: 0 auto; width: 100%; }
+  /* 4-col homepage grid drops to 2 on tablet */
+  div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
 }
 @media (max-width: 767px) {
   .section { padding: 56px 0; }
   .section-title { font-size: 1.5rem; }
   .campaigns-grid { grid-template-columns: 1fr; }
-  .home-campaigns-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .fee-calc-result { grid-template-columns: 1fr; }
   .filter-bar .form-input { max-width: 100%; }
   .auth-card { padding: 28px 20px; }
-  .hero-section { padding: 96px 0 60px !important; }
-  .hero-stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hero-stat-tile { padding: 10px; gap: 8px; }
-  .hero-stat-value { font-size: .82rem; }
 }
 
 /* ── Print ──────────────────────────────────────────────────── */

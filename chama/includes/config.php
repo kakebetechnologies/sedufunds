@@ -5,8 +5,7 @@
 // ============================================================
 
 if (!defined('BASE')) {
-    $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', '::1'])
-            || str_starts_with($_SERVER['HTTP_HOST'] ?? '', 'localhost:');
-    // localhost XAMPP: '/chama'  |  live server root: ''
-    define('BASE', $isLocal ? '/chama' : '');
+    // localhost XAMPP:  '/chama'
+    // live server root: ''
+    define('BASE', '/chama');  // ← set to '' when deploying to live server
 }
