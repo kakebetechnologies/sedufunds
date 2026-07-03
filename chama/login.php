@@ -48,7 +48,7 @@ if ($msg === 'unauthorized')  $errMsg  = 'You need to log in to access that page
 
     <div id="loginError" style="display:none;background:#fee2e2;color:#991b1b;padding:12px 16px;border-radius:10px;font-size:.88rem;margin-bottom:16px;text-align:center;"></div>
 
-    <form action="<?= BASE ?>/api/auth.php?action=login" method="POST" id="loginForm">
+   <form action="<?= BASE ?>/api/auth.php?action=login" method="POST">
     <div class="form-group">
         <label class="form-label">Email or Phone</label>
         <input type="text" id="identifier" name="identifier" class="form-input" placeholder="your@email.com or 256712..." required autofocus />
@@ -56,7 +56,7 @@ if ($msg === 'unauthorized')  $errMsg  = 'You need to log in to access that page
     <div class="form-group" style="position:relative;">
         <label class="form-label">Password</label>
         <input type="password" id="loginPassword" name="password" class="form-input" placeholder="••••••••" required />
-        <button type="button" onclick="togglePw('loginPassword',this)" style="position:absolute;right:14px;top:36px;color:#9ca3af;font-size:.85rem;"><i class="fas fa-eye"></i></button>
+       <button type="button" onclick="togglePw(this)" style="position:absolute;right:14px;top:36px;color:#9ca3af;font-size:.85rem;"><i class="fas fa-eye"></i></button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:#6b7280;cursor:pointer;">
@@ -78,44 +78,17 @@ if ($msg === 'unauthorized')  $errMsg  = 'You need to log in to access that page
     </p>
   </div>
 </div>
-<script src="<?= BASE ?>/js/main.js"></script>
+
+<!-- SIMPLE JAVASCRIPT - NO AJAX -->
 <script>
-function togglePw(id, btn) {
-  var input = document.getElementById(id);
+function togglePw(btn) {
+  var input = btn.parentElement.querySelector('input');
   var isText = input.type === 'text';
   input.type = isText ? 'password' : 'text';
   btn.innerHTML = isText ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
 }
-
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  var btn = document.getElementById('loginBtn');
-  btn.disabled = true;
-  btn.textContent = 'Logging in…';
-  var errDiv = document.getElementById('loginError');
-  errDiv.style.display = 'none';
-
-  var fd = new FormData(this);
-  fd.append('action', 'login');
-
-  try {
-    var res  = await fetch('<?= BASE ?>/api/auth.php?action=login', {method:'POST', body: fd});
-    var data = await res.json();
-    if (data.success) {
-      window.location.href = data.redirect;
-    } else {
-      errDiv.textContent = data.message;
-      errDiv.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Log In';
-    }
-  } catch(err) {
-    errDiv.textContent = 'An error occurred. Please try again.';
-    errDiv.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Log In';
-  }
-});
 </script>
+
+
 </body>
 </html>
