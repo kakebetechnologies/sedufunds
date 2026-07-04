@@ -7,7 +7,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 
-$conn   = require_once __DIR__ . '/../db/connection.php';
+// $conn is set by config.php
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ── LIST / SEARCH campaigns ───────────────────────────────────
@@ -157,7 +157,7 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!in_array($ext, $allowed) || $f['size'] > $maxBytes) continue;
         $filename  = 'camp_' . $uid . '_' . time() . '_' . count($imageUrls) . '.' . $ext;
         if (move_uploaded_file($f['tmp'], $uploadDir . $filename))
-            $imageUrls[] = '/chama/uploads/campaigns/' . $filename;
+            $imageUrls[] = BASE . '/uploads/campaigns/' . $filename;
     }
 
     $imageUrl    = $imageUrls[0] ?? '';      // cover = first image

@@ -7,7 +7,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 
-$conn   = require_once __DIR__ . '/../db/connection.php';
+// $conn is set by config.php
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ── REQUEST withdrawal (logged-in campaigner) ─────────────────
@@ -131,11 +131,12 @@ if ($action === 'approve' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     // Notify campaigner
     $w = $conn->query("SELECT campaigner_id, gross_amount FROM withdrawals WHERE withdrawal_id = $wid")->fetch_assoc();
     if ($w) {
-        $amt = number_format($w['gross_amount']);
-        $msg = $conn->real_escape_string("Your withdrawal of UGX $amt has been approved and is being processed.");
+        $amt         = number_format($w['gross_amount']);
+        $msg         = $conn->real_escape_string("Your withdrawal of UGX $amt has been approved and is being processed.");
+        $withdrawLink = $conn->real_escape_string(BASE . '/withdraw.php');
         $conn->query(
             "INSERT INTO notifications (user_id, type, title, message, link)
-             VALUES ({$w['campaigner_id']}, 'withdrawal', 'Withdrawal Approved', '$msg', '/chama/withdraw.php')"
+             VALUES ({$w['campaigner_id']}, 'withdrawal', 'Withdrawal Approved', '$msg', '$withdrawLink')"
         );
     }
     echo json_encode(['success' => true, 'message' => 'Withdrawal approved and processed.']);

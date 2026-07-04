@@ -23,11 +23,11 @@
       <div class="footer-col">
         <h4>Platform</h4>
         <ul>
-          <li><a href="/chama/campaign-drives.php">Campaign Drives</a></li>
-          <li><a href="/chama/donate.php">Donate</a></li>
-          <li><a href="/chama/create-campaign.php">Start a Campaign</a></li>
-          <li><a href="/chama/index.php#how-it-works">How It Works</a></li>
-          <li><a href="/chama/index.php#faq">FAQ</a></li>
+          <li><a href="<?= BASE ?>/campaign-drives.php">Campaign Drives</a></li>
+          <li><a href="<?= BASE ?>/donate.php">Donate</a></li>
+          <li><a href="<?= BASE ?>/create-campaign.php">Start a Campaign</a></li>
+          <li><a href="<?= BASE ?>/index.php#how-it-works">How It Works</a></li>
+          <li><a href="<?= BASE ?>/index.php#faq">FAQ</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -59,7 +59,7 @@
     </div>
   </div>
 </footer>
-<script src="/chama/js/main.js"></script>
+<script src="<?= BASE ?>/js/main.js"></script>
 <?php if (!empty($extraJs)) echo $extraJs; ?>
 </body>
 </html>

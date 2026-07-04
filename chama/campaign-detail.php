@@ -3,7 +3,7 @@
 // ChamaFunds – campaign-detail.php  (v4 — major redesign)
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 
 $id        = (int)($_GET['id']   ?? 0);
 $slug      = $conn->real_escape_string($_GET['slug'] ?? '');
@@ -25,7 +25,7 @@ if (!$result || $result->num_rows === 0) {
       <i class="fas fa-search" style="font-size:3rem;color:#d1d5db;margin-bottom:16px;display:block;"></i>
       <h2 style="color:#1A2A6C;font-weight:800;margin-bottom:8px;">Campaign Not Found</h2>
       <p style="color:#9ca3af;margin-bottom:24px;">This campaign may have been removed or the link is incorrect.</p>
-      <a href="/chama/campaign-drives.php" class="btn btn-primary">Browse Campaigns</a>
+      <a href="<?= BASE ?>/campaign-drives.php" class="btn btn-primary">Browse Campaigns</a>
     </div></div>';
     include __DIR__ . '/includes/footer.php'; exit;
 }
@@ -80,7 +80,7 @@ $isOwner   = isset($_SESSION['user_id']) &&
              ($_SESSION['user_id'] == $c['campaigner_id'] || ($_SESSION['role'] ?? '') === 'admin');
 
 $protocol     = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$canonicalUrl = $protocol.'://'.$_SERVER['HTTP_HOST'].'/chama/campaign-detail.php?id='.$cid;
+$canonicalUrl = BASE . '/campaign-detail.php?id=' . $cid;
 $ogImage      = !empty($campaignImages[0]['image_url'])
                     ? (strpos($campaignImages[0]['image_url'],'http')===0
                         ? $campaignImages[0]['image_url']
@@ -133,9 +133,9 @@ include __DIR__ . '/includes/header.php';
 
       <!-- Breadcrumb -->
       <nav class="cd-breadcrumb">
-        <a href="/chama/index.php">Home</a>
+        <a href="<?= BASE ?>/index.php">Home</a>
         <span>/</span>
-        <a href="/chama/campaign-drives.php">Campaigns</a>
+        <a href="<?= BASE ?>/campaign-drives.php">Campaigns</a>
         <span>/</span>
         <span><?= htmlspecialchars($c['category']) ?></span>
       </nav>
@@ -548,7 +548,7 @@ include __DIR__ . '/includes/header.php';
                 </p>
               </div>
               <?php if ($isOwner): ?>
-              <a href="/chama/edit-campaign.php?id=<?= $cid ?>" class="cd-edit-btn">
+              <a href="<?= BASE ?>/edit-campaign.php?id=<?= $cid ?>" class="cd-edit-btn">
                 <i class="fas fa-edit"></i> Edit
               </a>
               <?php endif; ?>
@@ -560,7 +560,7 @@ include __DIR__ . '/includes/header.php';
             <i class="fas fa-lock" style="font-size:2.5rem;color:#d1d5db;display:block;margin-bottom:14px;"></i>
             <p style="font-weight:800;color:#0f172a;font-size:1rem;margin-bottom:6px;">Campaign <?= ucfirst($c['status']) ?></p>
             <p style="color:#9ca3af;font-size:.86rem;margin-bottom:20px;">No longer accepting donations.</p>
-            <a href="/chama/campaign-drives.php" class="cd-donate-btn cd-donate-btn-full">Browse Active Campaigns</a>
+            <a href="<?= BASE ?>/campaign-drives.php" class="cd-donate-btn cd-donate-btn-full">Browse Active Campaigns</a>
           </div>
           <?php endif; ?>
 
@@ -1307,7 +1307,7 @@ function copyLink(btn) {
 
 // ── Track share count ──────────────────────────────────────
 function trackShare() {
-  fetch('/chama/api/campaigns.php?action=track_share', {
+  fetch('<?= BASE ?>/api/campaigns.php?action=track_share', {
     method:'POST',
     body: (() => { var fd=new FormData(); fd.append('campaign_id','<?= $cid ?>'); return fd; })()
   }).catch(()=>{});
@@ -1355,7 +1355,7 @@ document.getElementById('donateBtn')?.addEventListener('click', async function()
   fd.append('is_anonymous',          anon ? '1' : '');
 
   try {
-    var res  = await fetch('/chama/api/donations.php?action=submit', {method:'POST', body:fd});
+    var res  = await fetch('<?= BASE ?>/api/donations.php?action=submit', {method:'POST', body:fd});
     var text = await res.text();
     var data = {};
     try { data = JSON.parse(text); } catch (e) { data = { message: text }; }

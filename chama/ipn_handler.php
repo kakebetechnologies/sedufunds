@@ -5,7 +5,7 @@
  * This endpoint must respond with HTTP 200 quickly.
  */
 
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/pesapal_functions.php';
 
 // ── Log helper ────────────────────────────────────────────────

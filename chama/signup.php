@@ -4,7 +4,7 @@
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
-if (!empty($_SESSION['user_id'])) { header('Location: <?= BASE ?>/dashboard.php'); exit; }
+if (!empty($_SESSION['user_id'])) { header('Location: ' . BASE . '/dashboard.php'); exit; }
 ?>
 <!DOCTYPE html>
 <html lang="en">

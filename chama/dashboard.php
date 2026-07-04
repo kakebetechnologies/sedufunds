@@ -13,14 +13,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // ============================================================
-// FIX: Check if $conn exists, if not, load it
+// $conn is already set by config.php
 // ============================================================
-if (!isset($conn) || !$conn) {
-    $conn = require_once __DIR__ . '/db/connection.php';
-}
-
-// If connection still fails, show error
-if (!$conn) {
+if (!isset($conn) || !($conn instanceof mysqli)) {
     die("Database connection failed. Please try again later.");
 }
 

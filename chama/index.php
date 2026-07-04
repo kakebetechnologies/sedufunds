@@ -3,7 +3,7 @@
 // ChamaFunds – index.php  (Home page)
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 
 $pageTitle       = 'ChamaFunds – Mobile Money Crowdfunding in Uganda';
 $pageDescription = 'Uganda\'s leading mobile money crowdfunding platform. Create campaigns, donate to causes, and receive funds via MTN & Airtel Money.';
@@ -45,8 +45,8 @@ include __DIR__ . '/includes/header.php';
           Launch a campaign or donate to causes you care about. Transparent, secure, and built for mobile money.
         </p>
         <div class="hero-cta-row">
-          <a href="/chama/create-campaign.php" class="btn btn-primary btn-lg">Start a Campaign</a>
-          <a href="/chama/donate.php" class="btn btn-outline-white btn-lg">Donate Now</a>
+          <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary btn-lg">Start a Campaign</a>
+          <a href="<?= BASE ?>/donate.php" class="btn btn-outline-white btn-lg">Donate Now</a>
         </div>
         <div class="hero-trust-row">
           <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Free to start</span>
@@ -87,7 +87,7 @@ include __DIR__ . '/includes/header.php';
             </div>
           </div>
         </div>
-        <a href="/chama/campaign-drives.php" class="hero-panel-link">
+        <a href="<?= BASE ?>/campaign-drives.php" class="hero-panel-link">
           <i class="fas fa-th-large"></i> Browse All Campaigns <i class="fas fa-arrow-right"></i>
         </a>
       </div> -->
@@ -156,7 +156,7 @@ include __DIR__ . '/includes/header.php';
             $catClass = 'badge-' . strtolower($c['category']);
             $image    = $c['image_url'] ?: 'https://picsum.photos/seed/' . $c['slug'] . '/600/400';
           ?>
-          <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
+          <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
             <img class="card-img" src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($c['title']) ?>" loading="lazy" />
             <div class="card-body">
               <div class="campaign-meta">
@@ -179,12 +179,12 @@ include __DIR__ . '/includes/header.php';
       <?php else: ?>
         <div style="grid-column:1/-1;text-align:center;padding:60px 0;color:#9ca3af;">
           <i class="fas fa-rocket" style="font-size:3rem;margin-bottom:16px;display:block;"></i>
-          No active campaigns yet. <a href="/chama/create-campaign.php" style="color:#FF6B4A;font-weight:700;">Be the first!</a>
+          No active campaigns yet. <a href="<?= BASE ?>/create-campaign.php" style="color:#FF6B4A;font-weight:700;">Be the first!</a>
         </div>
       <?php endif; ?>
     </div>
     <div style="text-align:center;margin-top:36px;">
-      <a href="/chama/campaign-drives.php" class="btn btn-outline">More Campaigns <i class="fas fa-arrow-right" style="margin-left:6px;"></i></a>
+      <a href="<?= BASE ?>/campaign-drives.php" class="btn btn-outline">More Campaigns <i class="fas fa-arrow-right" style="margin-left:6px;"></i></a>
     </div>
   </div>
 </section>

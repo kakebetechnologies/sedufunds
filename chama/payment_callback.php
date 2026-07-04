@@ -6,7 +6,7 @@
  */
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/pesapal_functions.php';
 
 $donation_id       = (int)($_GET['donation_id'] ?? 0);
@@ -85,11 +85,12 @@ if ($donation['status'] === 'pending') {
                 $notifMsg    = "$donorLabel just donated " . number_format($amt)
                              . " to your campaign \"$campTitle\"";
                 $notifMsgEsc = $conn->real_escape_string($notifMsg);
+                $notifLink   = $conn->real_escape_string(BASE . '/campaign-detail.php?id=' . $campaign_id);
                 $conn->query(
                     "INSERT INTO notifications (user_id, type, title, message, link)
                      VALUES ($ownerId, 'donation', 'New Donation Received!',
                              '$notifMsgEsc',
-                             '/chama/campaign-detail.php?id=$campaign_id')"
+                             '$notifLink')"
                 );
             }
         }

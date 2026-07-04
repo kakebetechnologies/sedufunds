@@ -6,16 +6,16 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
 if (!isset($_SESSION['user_id'])) {
-    header('Location: <?= BASE ?>/login.php?msg=unauthorized'); exit;
+    header('Location: ' . BASE . '/login.php?msg=unauthorized'); exit;
 }
 
-$conn = require_once __DIR__ . '/db/connection.php';
+// $conn is set by config.php
 $uid  = (int)$_SESSION['user_id'];
 $role = $_SESSION['role'];
 $cid  = (int)($_GET['id'] ?? 0);
 
 if ($cid <= 0) {
-    header('Location: <?= BASE ?>/dashboard.php'); exit;
+    header('Location: ' . BASE . '/dashboard.php'); exit;
 }
 
 // Load the campaign
@@ -23,7 +23,7 @@ $result = $conn->query(
     "SELECT * FROM campaigns WHERE campaign_id = $cid LIMIT 1"
 );
 if (!$result || $result->num_rows === 0) {
-    header('Location: <?= BASE ?>/dashboard.php'); exit;
+    header('Location: ' . BASE . '/dashboard.php'); exit;
 }
 $c = $result->fetch_assoc();
 
@@ -66,12 +66,14 @@ if (!isset($permError) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if (in_array($ext, $allowed) && $_FILES['image']['size'] < 5 * 1024 * 1024) {
                 $filename = 'camp_' . $cid . '_' . time() . '.' . $ext;
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $filename)) {
-                    // Delete old uploaded image if it was a local one
-                    if ($c['image_url'] && strpos($c['image_url'], '/chama/uploads/') === 0) {
-                        $oldPath = __DIR__ . str_replace('/chama', '', $c['image_url']);
+                    // Delete old uploaded image if it was a local one (stored as /uploads/... relative)
+                    if ($c['image_url'] && (strpos($c['image_url'], '/chama/uploads/') === 0 || strpos($c['image_url'], '/uploads/') === 0)) {
+                        // Strip any /chama prefix to get the path relative to project root
+                        $relPath = preg_replace('#^/chama#', '', $c['image_url']);
+                        $oldPath = __DIR__ . $relPath;
                         if (file_exists($oldPath)) @unlink($oldPath);
                     }
-                    $imageUrl = '/chama/uploads/campaigns/' . $filename;
+                    $imageUrl = BASE . '/uploads/campaigns/' . $filename;
                 }
             } else {
                 $errorMsg = 'Image must be JPG, PNG or WEBP and under 5MB.';

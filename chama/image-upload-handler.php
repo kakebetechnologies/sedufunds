@@ -69,7 +69,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!move_uploaded_file($tmpName, $uploadDir . $filename)) {
             $errors[] = $origNames[$i].': upload failed'; continue;
         }
-        $url      = '/chama/uploads/campaigns/' . $filename;
+        $url      = BASE . '/uploads/campaigns/' . $filename;
         $urlEsc   = $conn->real_escape_string($url);
         $sortOrd  = $maxOrd + $i + 1;
         $cover    = ($isCover && $i === 0) ? 1 : 0;
@@ -112,8 +112,12 @@ if ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($role !== 'admin' && $img['campaigner_id'] != $uid) {
         echo json_encode(['success'=>false,'message'=>'Access denied.']); exit;
     }
-    // Remove physical file
-    $localPath = __DIR__ . str_replace('/chama/', '/', $img['image_url']);
+    // Remove physical file — strip any host/base prefix to get local path
+    $imgUrl = $img['image_url'];
+    // Support both /chama/uploads/... and full BASE URLs
+    $relPath = parse_url($imgUrl, PHP_URL_PATH); // get just the path part
+    $relPath = preg_replace('#^/chama#', '', $relPath); // strip /chama prefix if local dev
+    $localPath = __DIR__ . $relPath;
     if (file_exists($localPath)) @unlink($localPath);
     $conn->query("DELETE FROM campaign_images WHERE image_id=$imageId");
     echo json_encode(['success'=>true,'message'=>'Image deleted.']);

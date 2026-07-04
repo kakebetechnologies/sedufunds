@@ -4,7 +4,7 @@
  */
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 
 $donation_id    = (int)($_GET['donation_id'] ?? 0);
 $pendingStatus  = (isset($_GET['status']) && $_GET['status'] === 'pending');

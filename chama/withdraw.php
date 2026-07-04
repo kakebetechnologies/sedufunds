@@ -4,9 +4,9 @@
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
-if (!isset($_SESSION['user_id'])) { header('Location: <?= BASE ?>/login.php?msg=unauthorized'); exit; }
+if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE . '/login.php?msg=unauthorized'); exit; }
 
-$conn = require_once __DIR__ . '/db/connection.php';
+// $conn is set by config.php
 $uid  = (int)$_SESSION['user_id'];
 $user = $_SESSION['user'];
 

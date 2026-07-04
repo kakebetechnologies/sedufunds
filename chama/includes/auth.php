@@ -36,23 +36,26 @@ function isCampaigner(): bool {
     return in_array(currentRole(), ['admin', 'campaigner']);
 }
 
-function requireLogin(string $redirect = '/chama/login.php'): void {
+function requireLogin(string $redirect = ''): void {
     if (!isLoggedIn()) {
-        header("Location: $redirect");
+        $url = $redirect ?: (defined('BASE') ? BASE . '/login.php' : '/login.php');
+        header("Location: $url");
         exit;
     }
 }
 
-function requireAdmin(string $redirect = '/chama/login.php'): void {
+function requireAdmin(string $redirect = ''): void {
     if (!isLoggedIn() || !isAdmin()) {
-        header("Location: $redirect");
+        $url = $redirect ?: (defined('BASE') ? BASE . '/login.php' : '/login.php');
+        header("Location: $url");
         exit;
     }
 }
 
-function requireCampaigner(string $redirect = '/chama/login.php'): void {
+function requireCampaigner(string $redirect = ''): void {
     if (!isLoggedIn() || !isCampaigner()) {
-        header("Location: $redirect");
+        $url = $redirect ?: (defined('BASE') ? BASE . '/login.php' : '/login.php');
+        header("Location: $url");
         exit;
     }
 }
@@ -108,7 +111,7 @@ function logAdminAction(
 
 // ── Logout Function ────────────────────────────────────────
 
-function logoutUser(string $redirect = '/chama/login.php?msg=logged_out'): void {
+function logoutUser(string $redirect = ''): void {
     // Clear all session variables
     $_SESSION = array();
     
@@ -129,8 +132,9 @@ function logoutUser(string $redirect = '/chama/login.php?msg=logged_out'): void 
     // Destroy the session
     session_destroy();
     
-    // Redirect to login page
-    header("Location: $redirect");
+    // Redirect to login page using dynamic BASE if available
+    $url = $redirect ?: (defined('BASE') ? BASE . '/login.php?msg=logged_out' : '/login.php?msg=logged_out');
+    header("Location: $url");
     exit;
 }
 
@@ -231,9 +235,10 @@ function loginUser(mysqli $conn, array $user): void {
 // ── Get redirect URL after login ──────────────────────────
 
 function getLoginRedirectUrl(array $user): string {
+    $base = defined('BASE') ? BASE : '';
     if ($user['role'] === 'admin') {
-        return '/admin/index.php';
+        return $base . '/admin/index.php';
     }
-    return '/dashboard.php';
+    return $base . '/dashboard.php';
 }
 ?>

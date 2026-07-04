@@ -3,7 +3,7 @@
 // ChamaFunds – campaign-drives.php
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 
 $pageTitle       = 'Campaign Drives – Active Fundraising in Uganda | ChamaFunds';
 $pageDescription = 'Browse active crowdfunding campaigns in Uganda. Support medical emergencies, education, community projects, and more.';
@@ -35,7 +35,7 @@ include __DIR__ . '/includes/header.php';
           <span style="color:#10b981;font-weight:700;">● <?= $totalCount ?> active campaigns</span>
         </p>
       </div>
-      <a href="/chama/create-campaign.php" class="btn btn-primary"><i class="fas fa-plus" style="margin-right:6px;"></i>Start Your Campaign</a>
+      <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary"><i class="fas fa-plus" style="margin-right:6px;"></i>Start Your Campaign</a>
     </div>
   </div>
 </div>
@@ -85,7 +85,7 @@ include __DIR__ . '/includes/header.php';
         $catClass = 'badge-' . $catLower;
         $image    = $c['image_url'] ?: '';
       ?>
-      <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
+      <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
          class="card campaign-card filterable-card"
          style="text-decoration:none;color:inherit;"
          data-title="<?= htmlspecialchars(strtolower($c['title'])) ?>"
@@ -125,7 +125,7 @@ include __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
       <?php if (empty($campaigns)): ?>
       <div style="grid-column:span 3;text-align:center;padding:60px 0;color:#9ca3af;">
-        No active campaigns yet. <a href="/chama/create-campaign.php" style="color:#FF6B4A;">Start one!</a>
+        No active campaigns yet. <a href="<?= BASE ?>/create-campaign.php" style="color:#FF6B4A;">Start one!</a>
       </div>
       <?php endif; ?>
     </div>
@@ -137,7 +137,7 @@ include __DIR__ . '/includes/header.php';
   <div class="container" style="text-align:center;">
     <h2 style="color:#fff;font-weight:800;font-size:1.7rem;margin-bottom:12px;">Have a cause worth sharing?</h2>
     <p style="color:rgba(255,255,255,.7);margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto;">Start your own campaign in under 2 minutes. Free to create, mobile money-first.</p>
-    <a href="/chama/create-campaign.php" class="btn btn-primary btn-lg">🚀 Start Your Own Campaign</a>
+    <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary btn-lg">🚀 Start Your Own Campaign</a>
   </div>
 </section>
 

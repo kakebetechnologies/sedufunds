@@ -3,18 +3,22 @@
 // ChamaFunds – db/connection.php
 // ============================================================
 
-// Detect if we're on localhost
-$isLocal = strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || 
+// Reuse existing connection if config.php already created it
+if (isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) {
+    $conn = $GLOBALS['conn'];
+    return $conn;
+}
+
+// Detect environment
+$isLocal = strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
            strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false;
 
 if ($isLocal) {
-    // LOCAL
     $host     = 'localhost';
     $username = 'root';
     $password = '';
     $database = 'chamafunds';
 } else {
-    // LIVE
     $host     = 'localhost';
     $username = 'u850523537_VPS';
     $password = '@Kt2026#Kakebe';
@@ -29,5 +33,6 @@ if ($conn->connect_error) {
 
 $conn->set_charset("utf8mb4");
 
+$GLOBALS['conn'] = $conn;
+
 return $conn;
-?>

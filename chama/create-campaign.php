@@ -666,20 +666,20 @@ document.getElementById('launchBtn').addEventListener('click', async function() 
   <?php if (!$isLoggedIn): ?>
   // Redirect to signup if not logged in
   window.showToast('Please sign up or log in to create a campaign.','error');
-  setTimeout(function(){ window.location.href='/chama/signup.php'; }, 1500);
+  setTimeout(function(){ window.location.href='<?= BASE ?>/signup.php'; }, 1500);
   btn.disabled=false; btn.textContent='🚀 Submit Campaign for Review';
   return;
   <?php endif; ?>
 
   try {
-    var res  = await fetch('/chama/api/campaigns.php?action=create',{method:'POST',body:fd});
+    var res  = await fetch('<?= BASE ?>/api/campaigns.php?action=create',{method:'POST',body:fd});
     var data = await res.json();
     if (data.success) {
       var msgEl = document.getElementById('campaignFormMsg');
       msgEl.style.cssText='display:block;background:#d1fae5;color:#065f46;padding:12px;border-radius:10px;font-size:.88rem;margin-bottom:16px;';
       msgEl.textContent = data.message;
       window.scrollTo(0,0);
-      setTimeout(function(){ window.location.href='/chama/dashboard.php'; }, 2500);
+      setTimeout(function(){ window.location.href='<?= BASE ?>/dashboard.php'; }, 2500);
     } else {
       window.showToast(data.message,'error');
       btn.disabled=false; btn.textContent='🚀 Submit Campaign for Review';

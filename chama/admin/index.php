@@ -10,7 +10,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Check if user is logged in and is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: /chama/login.php?msg=unauthorized');
+    require_once __DIR__ . '/../includes/config.php';
+    header('Location: ' . BASE . '/login.php?msg=unauthorized');
     exit;
 }
 
@@ -127,8 +128,8 @@ if (!$adminLogs) $adminLogs = false;
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   
-  <!-- ✅ FIXED CSS PATH - WORKS ON LOCAL AND LIVE -->
-  <link rel="stylesheet" href="/chama/css/style.css" />
+  <!-- ✅ CSS PATH - WORKS ON LOCAL AND LIVE -->
+  <link rel="stylesheet" href="<?= BASE ?>/css/style.css" />
 </head>
 <body>
 <!-- Mobile Top Bar -->
@@ -164,8 +165,8 @@ if (!$adminLogs) $adminLogs = false;
       </a>
     </nav>
   <div class="sidebar-footer">
-  <!--<a href="/chama/dashboard.php" class="sidebar-link"><i class="fas fa-arrow-left"></i>Back to Dashboard</a>-->
-  <a href="/chama/logout.php" class="sidebar-link" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  <!--<a href="<?= BASE ?>/dashboard.php" class="sidebar-link"><i class="fas fa-arrow-left"></i>Back to Dashboard</a>-->
+  <a href="<?= BASE ?>/logout.php" class="sidebar-link" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
   </aside>
 
@@ -543,7 +544,7 @@ if (!$adminLogs) $adminLogs = false;
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="/chama/js/main.js"></script>
+<script src="<?= BASE ?>/js/main.js"></script>
 <script>
 // ── Helpers ──────────────────────────────────────────────────
 function adminAlert(msg, ok) {

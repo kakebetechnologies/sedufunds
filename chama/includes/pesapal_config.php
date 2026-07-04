@@ -41,8 +41,16 @@ if (!defined('PESAPAL_BASE_URL')) {
 }
 
 // ── Callback & IPN URLs ───────────────────────────────────────
-define('PESAPAL_CALLBACK_URL', PESAPAL_BASE_URL . '/chama/payment_callback.php');
-define('PESAPAL_IPN_URL',      PESAPAL_BASE_URL . '/chama/ipn_handler.php');
+// Auto-detect the subfolder path (e.g. /chama on local, / on live)
+$_pesapalScriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+$_pesapalBasePath  = rtrim($_pesapalScriptDir === '/' ? '' : $_pesapalScriptDir, '/');
+// Walk up to project root (this file is in includes/, so go 1 level up)
+$_pesapalRootPath  = rtrim(dirname($_pesapalBasePath), '/');
+// If we're already at root or the path looks off, just use the auto-detected base
+$_pesapalRootPath  = (strlen($_pesapalRootPath) > 1) ? $_pesapalRootPath : '';
+
+define('PESAPAL_CALLBACK_URL', PESAPAL_BASE_URL . $_pesapalRootPath . '/payment_callback.php');
+define('PESAPAL_IPN_URL',      PESAPAL_BASE_URL . $_pesapalRootPath . '/ipn_handler.php');
 
 // ── Currency ──────────────────────────────────────────────────
 define('PESAPAL_DEFAULT_CURRENCY', 'UGX');

@@ -3,7 +3,7 @@
 // ChamaFunds – donate.php  (Browse & donate)
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
-$conn = require_once __DIR__ . '/db/connection.php';
+require_once __DIR__ . '/includes/config.php';
 
 $pageTitle       = 'Donate – Support Causes in Uganda | ChamaFunds';
 $pageDescription = 'Make a difference today. Donate to medical, education, and community campaigns via MTN Mobile Money or Airtel Money.';
@@ -68,7 +68,7 @@ include __DIR__ . '/includes/header.php';
         $catLower= strtolower($c['category']);
         $image   = $c['image_url'] ?: '';
       ?>
-      <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
+      <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
          class="card campaign-card filterable-card"
          style="text-decoration:none;color:inherit;"
          data-title="<?= htmlspecialchars(strtolower($c['title'])) ?>"
@@ -105,7 +105,7 @@ include __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
       <?php if (empty($campaigns)): ?>
       <div style="grid-column:span 3;text-align:center;padding:60px 0;color:#9ca3af;">
-        No active campaigns at the moment. <a href="/chama/create-campaign.php" style="color:#FF6B4A;">Start one!</a>
+        No active campaigns at the moment. <a href="<?= BASE ?>/create-campaign.php" style="color:#FF6B4A;">Start one!</a>
       </div>
       <?php endif; ?>
     </div>
