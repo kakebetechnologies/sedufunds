@@ -34,6 +34,9 @@ $logoutUrl = getBasePath() . '/logout.php';
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?= $pageTitle ?? 'ChamaFunds – Mobile Money Crowdfunding' ?></title>
+  <link rel="icon" type="image/png" href="<?= BASE ?>/img/favicon.png" />
+  <link rel="shortcut icon" type="image/png" href="<?= BASE ?>/img/favicon.png" />
+  <link rel="apple-touch-icon" href="<?= BASE ?>/img/favicon.png" />
   <?php if (!empty($pageDescription)): ?>
   <meta name="description" content="<?= htmlspecialchars($pageDescription) ?>" />
   <?php endif; ?>
