@@ -14,12 +14,9 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 // ── Helper function to get full image URL ────────────────────
 function getFullImageUrl($path) {
     if (empty($path)) return '';
-    if (strpos($path, 'http') === 0) {
-        return $path; // Already absolute
-    }
-    // Remove leading slash if present to avoid double slashes
-    $cleanPath = ltrim($path, '/');
-    return 'https://' . $_SERVER['HTTP_HOST'] . '/chama/' . $cleanPath;
+    if (strpos($path, 'http') === 0) return $path; // already absolute
+    // Use BASE so it works on both localhost and live
+    return BASE . '/' . ltrim($path, '/');
 }
 
 // ── LIST / SEARCH campaigns ───────────────────────────────────
@@ -172,15 +169,12 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $imageUrls = [];
-    $baseUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/chama/uploads/campaigns/';
-    
     foreach ($rawFiles as $f) {
         $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
         if (!in_array($ext, $allowed) || $f['size'] > $maxBytes) continue;
-        $filename  = 'camp_' . $uid . '_' . time() . '_' . count($imageUrls) . '.' . $ext;
+        $filename = 'camp_' . $uid . '_' . time() . '_' . count($imageUrls) . '.' . $ext;
         if (move_uploaded_file($f['tmp'], $uploadDir . $filename)) {
-            // ✅ STORE FULL URL
-            $imageUrls[] = $baseUrl . $filename;
+            $imageUrls[] = '/uploads/campaigns/' . $filename; // relative — works on any domain
         }
     }
 
