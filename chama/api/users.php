@@ -46,7 +46,7 @@ if ($action === 'update_profile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (in_array($ext, $allowed) && $_FILES['avatar']['size'] < 2 * 1024 * 1024) {
             $filename = 'avatar_' . $uid . '_' . time() . '.' . $ext;
             if (move_uploaded_file($_FILES['avatar']['tmp_name'], $uploadDir . $filename)) {
-                $avatarUrl  = BASE . '/uploads/avatars/' . $filename;
+                $avatarUrl  = '/uploads/avatars/' . $filename;
                 $avatarEsc  = $conn->real_escape_string($avatarUrl);
                 $avatarSql  = ", avatar_url = '$avatarEsc'";
             }

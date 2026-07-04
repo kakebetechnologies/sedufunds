@@ -69,7 +69,7 @@ if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!move_uploaded_file($tmpName, $uploadDir . $filename)) {
             $errors[] = $origNames[$i].': upload failed'; continue;
         }
-        $url      = BASE . '/uploads/campaigns/' . $filename;
+        $url = '/uploads/campaigns/' . $filename;
         $urlEsc   = $conn->real_escape_string($url);
         $sortOrd  = $maxOrd + $i + 1;
         $cover    = ($isCover && $i === 0) ? 1 : 0;

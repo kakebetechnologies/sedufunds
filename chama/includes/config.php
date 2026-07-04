@@ -4,7 +4,17 @@
 // ============================================================
 
 function getBaseUrl() {
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    // Detect protocol — check proxy headers too (common on cPanel/shared hosting)
+    $protocol = 'https'; // default to https on live
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $protocol = trim($_SERVER['HTTP_X_FORWARDED_PROTO']);
+    } elseif (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        $protocol = 'https';
+    } elseif (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
+              strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+        $protocol = 'http'; // only use http on actual localhost
+    }
+
     $host = $_SERVER['HTTP_HOST'];
 
     // __DIR__ here is the /includes folder; project root is one level up
@@ -15,7 +25,7 @@ function getBaseUrl() {
     $path = str_replace($docRoot, '', $projectDir);
     $path = rtrim($path, '/');
 
-    return $protocol . $host . $path;
+    return $protocol . '://' . $host . $path;
 }
 
 define('BASE', getBaseUrl());

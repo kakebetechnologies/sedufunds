@@ -73,7 +73,7 @@ if (!isset($permError) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                         $oldPath = __DIR__ . $relPath;
                         if (file_exists($oldPath)) @unlink($oldPath);
                     }
-                    $imageUrl = BASE . '/uploads/campaigns/' . $filename;
+                    $imageUrl = '/uploads/campaigns/' . $filename;
                 }
             } else {
                 $errorMsg = 'Image must be JPG, PNG or WEBP and under 5MB.';

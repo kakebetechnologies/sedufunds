@@ -159,7 +159,7 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!in_array($ext, $allowed) || $f['size'] > $maxBytes) continue;
         $filename  = 'camp_' . $uid . '_' . time() . '_' . count($imageUrls) . '.' . $ext;
         if (move_uploaded_file($f['tmp'], $uploadDir . $filename))
-            $imageUrls[] = BASE . '/uploads/campaigns/' . $filename;
+            $imageUrls[] = '/uploads/campaigns/' . $filename; // store relative path
     }
 
     $imageUrl    = $imageUrls[0] ?? '';      // cover = first image
