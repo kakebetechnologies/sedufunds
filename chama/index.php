@@ -14,7 +14,7 @@ if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
     $protocol = trim($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https' ? 'https' : $protocol;
 }
 $siteUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME'])), '/');
-$ogImage  = BASE . '/og-image.php';
+$ogImage  = BASE . '/img/logo.png';
 $ogTitle  = 'ChamaFunds – Pool Money Together for What Matters';
 $ogDesc   = 'Launch a fundraising campaign in 60 seconds. Free to start. Receive funds directly to your mobile money — MTN, Airtel & more. Trusted by thousands across Africa.';
 
