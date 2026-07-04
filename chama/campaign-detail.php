@@ -907,10 +907,21 @@ include __DIR__ . '/includes/header.php';
   overflow:hidden; margin-bottom:20px;
   box-shadow:0 1px 12px rgba(0,0,0,.07);
 }
-.cd-photo-main { overflow:hidden; max-height:480px; background:#0f172a; }
+.cd-photo-main {
+  overflow:hidden;
+  background:#0f172a;
+  /* Responsive: show full image at natural 16:9-ish ratio */
+  aspect-ratio:16/10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 .cd-photo-main img {
-  width:100%; max-height:480px; object-fit:contain;
-  display:block; transition:transform .5s ease;
+  width:100%;
+  height:100%;
+  object-fit:contain;   /* show full image — no cropping */
+  display:block;
+  transition:transform .5s ease;
 }
 .cd-photo-main:hover img { transform:scale(1.02); }
 .cd-photo-thumbs {
@@ -1307,9 +1318,8 @@ include __DIR__ . '/includes/header.php';
   .cd-prog-stats { grid-template-columns:repeat(2,1fr); }
   .cd-quick { flex-wrap:wrap; }
   .cd-q-btn { min-width:calc(50% - 4px); flex:none; }
-  /* Photos full-width, slightly shorter */
-  .cd-photo-main { max-height:300px; }
-  .cd-photo-main img { max-height:240px; }
+  /* Photos — taller aspect on portrait mobile screens */
+  .cd-photo-main { aspect-ratio:4/3; }
   /* Compact body padding — leave room for sticky donate bar */
   .cd-body { padding:20px 0 100px; }
   /* Make inline CTA stack on mobile */
