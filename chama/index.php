@@ -5,8 +5,40 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
 
-$pageTitle       = 'ChamaFunds – Mobile Money Crowdfunding in Uganda';
-$pageDescription = 'Uganda\'s leading mobile money crowdfunding platform. Create campaigns, donate to causes, and receive funds via MTN & Airtel Money.';
+$pageTitle       = 'ChamaFunds – Pool Money Together for What Matters';
+$pageDescription = 'Uganda\'s mobile money crowdfunding platform. Launch a campaign in 60 seconds, receive funds via MTN & Airtel Money. Free to start — same-day payout.';
+
+// ── OG / Social meta ─────────────────────────────────────────
+$siteUrl  = 'https://chama.kakebeshop.com';
+$ogImage  = $siteUrl . '/og-image.php';   // dynamic branded card
+$ogTitle  = 'ChamaFunds – Pool Money Together for What Matters';
+$ogDesc   = 'Launch a fundraising campaign in 60 seconds. Free to start. Receive funds directly to your mobile money — MTN, Airtel & more. Trusted by thousands across Africa.';
+
+$extraCss = <<<HTML
+  <!-- ══ Open Graph ══ -->
+  <meta property="og:type"             content="website"/>
+  <meta property="og:url"              content="{$siteUrl}/"/>
+  <meta property="og:site_name"        content="ChamaFunds"/>
+  <meta property="og:title"            content="{$ogTitle}"/>
+  <meta property="og:description"      content="{$ogDesc}"/>
+  <meta property="og:image"            content="{$ogImage}"/>
+  <meta property="og:image:secure_url" content="{$ogImage}"/>
+  <meta property="og:image:width"      content="1200"/>
+  <meta property="og:image:height"     content="630"/>
+  <meta property="og:image:alt"        content="ChamaFunds – Mobile Money Crowdfunding"/>
+  <meta property="og:locale"           content="en_UG"/>
+  <!-- ══ Twitter / X ══ -->
+  <meta name="twitter:card"            content="summary_large_image"/>
+  <meta name="twitter:site"            content="@ChamaFunds"/>
+  <meta name="twitter:title"           content="{$ogTitle}"/>
+  <meta name="twitter:description"     content="{$ogDesc}"/>
+  <meta name="twitter:image"           content="{$ogImage}"/>
+  <meta name="twitter:image:alt"       content="ChamaFunds – Mobile Money Crowdfunding"/>
+  <!-- ══ Extra SEO ══ -->
+  <meta name="keywords"                content="crowdfunding Uganda, mobile money fundraising, MTN mobile money, chama funds, campaign donations Africa"/>
+  <meta name="robots"                  content="index, follow"/>
+  <link rel="canonical"                href="{$siteUrl}/"/>
+HTML;
 
 // DB connection status for popup
 $dbConnected = ($conn && !$conn->connect_error);
