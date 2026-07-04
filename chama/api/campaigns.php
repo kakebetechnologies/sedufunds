@@ -11,6 +11,17 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/notifications.php';
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
+// ── Helper function to get full image URL ────────────────────
+function getFullImageUrl($path) {
+    if (empty($path)) return '';
+    if (strpos($path, 'http') === 0) {
+        return $path; // Already absolute
+    }
+    // Remove leading slash if present to avoid double slashes
+    $cleanPath = ltrim($path, '/');
+    return 'https://' . $_SERVER['HTTP_HOST'] . '/chama/' . $cleanPath;
+}
+
 // ── LIST / SEARCH campaigns ───────────────────────────────────
 if ($action === 'list' && $_SERVER['REQUEST_METHOD'] === 'GET') {
     $search   = $conn->real_escape_string($_GET['search']   ?? '');
@@ -48,7 +59,11 @@ if ($action === 'list' && $_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $result = $conn->query($sql);
     $rows   = [];
-    while ($r = $result->fetch_assoc()) $rows[] = $r;
+    while ($r = $result->fetch_assoc()) {
+        // Convert image URLs to full URLs for response
+        $r['image_url'] = getFullImageUrl($r['image_url'] ?? '');
+        $rows[] = $r;
+    }
 
     echo json_encode(['success' => true, 'campaigns' => $rows, 'total' => (int)$total, 'page' => $page, 'limit' => $limit]);
     exit;
@@ -74,6 +89,9 @@ if ($action === 'get' && $_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
     $campaign = $result->fetch_assoc();
+    
+    // Convert image URLs to full URLs
+    $campaign['image_url'] = getFullImageUrl($campaign['image_url'] ?? '');
 
     // Increment view count
     $cid = $campaign['campaign_id'];
@@ -154,12 +172,16 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $imageUrls = [];
+    $baseUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/chama/uploads/campaigns/';
+    
     foreach ($rawFiles as $f) {
         $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
         if (!in_array($ext, $allowed) || $f['size'] > $maxBytes) continue;
         $filename  = 'camp_' . $uid . '_' . time() . '_' . count($imageUrls) . '.' . $ext;
-        if (move_uploaded_file($f['tmp'], $uploadDir . $filename))
-            $imageUrls[] = '/uploads/campaigns/' . $filename; // store relative path
+        if (move_uploaded_file($f['tmp'], $uploadDir . $filename)) {
+            // ✅ STORE FULL URL
+            $imageUrls[] = $baseUrl . $filename;
+        }
     }
 
     $imageUrl    = $imageUrls[0] ?? '';      // cover = first image
