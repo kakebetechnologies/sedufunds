@@ -35,7 +35,7 @@ function sendCampaignCreationEmail($campaign_data) {
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = '🚀 New Campaign Created: ' . $campaign_data['title'];
+        $mail->Subject = 'New Campaign Created: ' . $campaign_data['title'];
         $mail->Body    = buildEmailBody($campaign_data);
         $mail->AltBody = strip_tags($mail->Body);
 
