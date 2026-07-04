@@ -8,6 +8,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/notifications.php';
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ── LIST / SEARCH campaigns ───────────────────────────────────
@@ -98,8 +99,9 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'message' => 'You must be logged in to create a campaign.']);
         exit;
     }
-    if (!in_array($_SESSION['role'], ['admin', 'campaigner'])) {
-        echo json_encode(['success' => false, 'message' => 'Only campaigners can create campaigns.']);
+    // Allow any logged-in user — role is set to campaigner on signup or elevated by admin
+    if (!in_array($_SESSION['role'], ['admin', 'campaigner', 'donor'])) {
+        echo json_encode(['success' => false, 'message' => 'Please log in to create a campaign.']);
         exit;
     }
 
@@ -185,29 +187,24 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Exception $e) { /* table may not exist yet — non-fatal */ }
 
-    // ============================================================
-    // ✅ SEND NOTIFICATIONS FOR NEW CAMPAIGN
-    // ============================================================
-    // Get the user's full name and email from session
-    $user_full_name = $_SESSION['user']['full_name'] ?? 'Unknown';
-    $user_email = $_SESSION['user']['email'] ?? 'unknown@email.com';
-    $user_phone = $_SESSION['user']['phone'] ?? 'N/A';
-
+    // ── Send email notification to admin ──────────────────────
     $campaign_data = [
-        'campaign_id' => $newId,
-        'title' => $title,
-        'campaigner_name' => $user_full_name,
-        'campaigner_email' => $user_email,
-        'campaigner_phone' => $user_phone,
-        'category' => $category,
-        'goal_amount' => $goalAmount,
-        'currency' => $currency,
-        'country' => $country
+        'campaign_id'      => $newId,
+        'title'            => $title,
+        'campaigner_name'  => $_SESSION['user']['full_name'] ?? 'Unknown',
+        'campaigner_email' => $_SESSION['user']['email']     ?? '',
+        'campaigner_phone' => $_SESSION['user']['phone']     ?? 'N/A',
+        'category'         => $category,
+        'goal_amount'      => $goalAmount,
+        'currency'         => $currency,
+        'country'          => $country,
     ];
-    
-    // Include and call notification
-    require_once __DIR__ . '/../includes/notifications.php';
-    notifyNewCampaign($conn, $newId, $campaign_data);
+    // Fire-and-forget — email failure must never block campaign creation
+    try {
+        notifyNewCampaign($conn, $newId, $campaign_data);
+    } catch (Exception $e) {
+        error_log('Campaign notification error: ' . $e->getMessage());
+    }
 
     echo json_encode([
         'success'     => true,
