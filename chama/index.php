@@ -16,7 +16,7 @@ if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
 $siteUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME'])), '/');
 $ogImage  = BASE . '/img/logo.png';
 $ogTitle  = 'ChamaFunds – Pool Money Together for What Matters';
-$ogDesc   = 'Launch a fundraising campaign in 60 seconds. Free to start. Receive funds directly to your mobile money — MTN, Airtel & more. Trusted by thousands across Africa.';
+$ogDesc   = 'No spreadsheets, no chasing — just impact: ChamaFunds makes it easy to pool money for causes that matter. No spreadsheets, no chasing — just impact. Live tracking, automated reminders, mobile money donations.';
 
 $extraCss = <<<HTML
   <!-- ══ Open Graph ══ -->
