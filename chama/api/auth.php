@@ -47,10 +47,13 @@ if ($action === 'login') {
         mysqli_query($conn, "UPDATE users SET last_login = NOW() WHERE user_id = " . $user['user_id']);
 
         $dest = ($user['role'] === 'admin') ? '/admin/index.php' : '/dashboard.php';
+        // Honour redirect_after_auth if set
+        $redirectAfter = $_SESSION['redirect_after_auth'] ?? '';
+        unset($_SESSION['redirect_after_auth']);
 
         echo json_encode([
             'success' => true,
-            'redirect' => BASE . $dest
+            'redirect' => $redirectAfter ?: BASE . $dest
         ]);
         exit;
     } else {
@@ -141,11 +144,14 @@ if ($action === 'register') {
         ];
 
         $dest = ($role === 'admin') ? '/admin/index.php' : '/dashboard.php';
+        // Honour redirect_after_auth if set (e.g. from create-campaign gate)
+        $redirectAfter = $_SESSION['redirect_after_auth'] ?? '';
+        unset($_SESSION['redirect_after_auth']);
 
         echo json_encode([
             'success'  => true,
             'message'  => 'Account created successfully! Welcome to ChamaFunds.',
-            'redirect' => BASE . $dest
+            'redirect' => $redirectAfter ?: BASE . $dest
         ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Registration failed. Please try again. ' . $conn->error]);
