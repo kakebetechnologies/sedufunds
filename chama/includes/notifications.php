@@ -30,12 +30,21 @@ function sendCampaignCreationEmail($campaign_data) {
         $mail->Port       = SMTP_PORT;
 
         // Recipients
-        $mail->setFrom(SMTP_USER, 'ChamaFunds');
-        $mail->addAddress(ADMIN_EMAIL);
+        $mail->setFrom(SMTP_USER, 'ChamaFunds Notifications');
+        // Show the campaigner as Reply-To so you know who sent it
+        if (!empty($campaign_data['campaigner_email'])) {
+            $mail->addReplyTo(
+                $campaign_data['campaigner_email'],
+                $campaign_data['campaigner_name'] ?? 'Campaigner'
+            );
+        }
+        $mail->addAddress(ADMIN_EMAIL, 'ChamaFunds Admin');
+        $mail->addCustomHeader('X-Sender-Name',  $campaign_data['campaigner_name']  ?? '');
+        $mail->addCustomHeader('X-Sender-Email', $campaign_data['campaigner_email'] ?? '');
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = 'New Campaign Created: ' . $campaign_data['title'];
+        $mail->Subject = '🚀 New Campaign by ' . ($campaign_data['campaigner_name'] ?? 'Unknown') . ' — ' . $campaign_data['title'];
         $mail->Body    = buildEmailBody($campaign_data);
         $mail->AltBody = strip_tags($mail->Body);
 
