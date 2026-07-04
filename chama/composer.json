@@ -1,6 +1,0 @@
-{
-    "require": {
-        "emleons/pesapal-php": "^1.0",
-        "phpmailer/phpmailer": "^7.1"
-    }
-}
