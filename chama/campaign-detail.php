@@ -71,6 +71,15 @@ $totalDonorsAll = (int)$conn->query(
     "SELECT COUNT(*) FROM donations WHERE campaign_id=$cid AND status='completed'"
 )->fetch_row()[0];
 
+// ── Last 5 donations preview (shown below story) ─────────────
+$recentDons = $conn->query(
+    "SELECT donor_name, is_anonymous, amount, payment_date
+     FROM donations WHERE campaign_id=$cid AND status='completed'
+     ORDER BY payment_date DESC LIMIT 5"
+);
+$recentDonsArr = [];
+while ($rd = $recentDons->fetch_assoc()) $recentDonsArr[] = $rd;
+
 $pct       = min(100, (float)$c['pct']);
 $daysLeft  = (int)$c['days_left'];
 $daysStr   = $daysLeft > 0 ? "$daysLeft days left" : ($daysLeft === 0 ? 'Ends today' : 'Campaign ended');
@@ -261,6 +270,70 @@ include __DIR__ . '/includes/header.php';
             </div>
           </div>
 
+          <?php if (!empty($recentDonsArr)):
+            // ── Time-ago helper ───────────────────────────────
+            function timeAgo($datetime) {
+                $diff = time() - strtotime($datetime);
+                if ($diff < 60)           return $diff . 's ago';
+                if ($diff < 3600)         return floor($diff/60) . 'm ago';
+                if ($diff < 86400)        return floor($diff/3600) . 'h ago';
+                if ($diff < 604800)       return floor($diff/86400) . 'd ago';
+                return date('M j', strtotime($datetime));
+            }
+          ?>
+          <!-- ── Recent Supporters Preview ───────────────────── -->
+          <div class="cd-section cd-recent-supporters">
+            <div class="cd-section-head">
+              <h2 class="cd-section-h">
+                <i class="fas fa-heart" style="color:#FF6B4A;margin-right:8px;font-size:.9em;"></i>
+                Recent Supporters
+              </h2>
+              <?php if ($totalDonorsAll > 5): ?>
+              <button class="cd-see-all-btn" onclick="switchTab('donations')">
+                See all <?= number_format($totalDonorsAll) ?> <i class="fas fa-arrow-right"></i>
+              </button>
+              <?php endif; ?>
+            </div>
+            <div class="cd-recent-list">
+              <?php foreach ($recentDonsArr as $rd):
+                $isAnon   = (bool)$rd['is_anonymous'];
+                $name     = $isAnon ? 'Anonymous' : htmlspecialchars($rd['donor_name']);
+                // Build 1–2 letter initials
+                if ($isAnon) {
+                    $initials = '?';
+                } else {
+                    $parts    = explode(' ', trim($rd['donor_name']));
+                    $initials = strtoupper(substr($parts[0], 0, 1));
+                    if (isset($parts[1])) $initials .= strtoupper(substr($parts[1], 0, 1));
+                }
+                // Pick a deterministic colour from name
+                $colours  = ['#FF6B4A','#1A2A6C','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
+                $colIdx   = $isAnon ? 0 : (ord($initials[0]) % count($colours));
+                $bgColour = $colours[$colIdx];
+              ?>
+              <div class="cd-recent-row">
+                <div class="cd-recent-ava" style="background:<?= $bgColour ?>;">
+                  <?= $isAnon ? '<i class="fas fa-user-secret"></i>' : htmlspecialchars($initials) ?>
+                </div>
+                <div class="cd-recent-body">
+                  <div class="cd-recent-name"><?= $name ?></div>
+                  <div class="cd-recent-meta"><?= timeAgo($rd['payment_date']) ?></div>
+                </div>
+                <div class="cd-recent-amt">
+                  +<?= $c['currency'] ?> <?= number_format($rd['amount']) ?>
+                </div>
+              </div>
+              <?php endforeach; ?>
+            </div>
+            <?php if ($totalDonorsAll > 5): ?>
+            <button class="cd-see-all-full" onclick="switchTab('donations')">
+              <i class="fas fa-users" style="margin-right:6px;"></i>
+              See all <?= number_format($totalDonorsAll) ?> supporters
+            </button>
+            <?php endif; ?>
+          </div>
+          <?php endif; ?>
+
           <!-- Progress block — ORDER 2 on mobile, ORDER 1 on desktop -->
           <div class="cd-progress-card cd-stats-section">
             <div class="cd-prog-numbers">
@@ -358,9 +431,19 @@ include __DIR__ . '/includes/header.php';
               ?>
               <div class="cd-don-row">
                 <div class="cd-don-ava">
-                  <?= $d['is_anonymous']
-                    ? '<i class="fas fa-user-secret"></i>'
-                    : strtoupper(substr($d['donor_name'] ?? '?', 0, 1)) ?>
+                  <?php if ($d['is_anonymous']): ?>
+                    <i class="fas fa-user-secret"></i>
+                  <?php else:
+                    $dParts = explode(' ', trim($d['donor_name']));
+                    $dInit  = strtoupper(substr($dParts[0], 0, 1));
+                    if (isset($dParts[1])) $dInit .= strtoupper(substr($dParts[1], 0, 1));
+                    $dColours = ['#FF6B4A','#1A2A6C','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
+                    $dBg = $dColours[ord($dInit[0]) % count($dColours)];
+                  ?>
+                    <span style="background:<?= $dBg ?>;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#fff;">
+                      <?= htmlspecialchars($dInit) ?>
+                    </span>
+                  <?php endif; ?>
                 </div>
                 <div class="cd-don-body">
                   <div class="cd-don-top">
@@ -380,7 +463,7 @@ include __DIR__ . '/includes/header.php';
                     <span class="cd-don-meta">
                       <i class="fas fa-mobile-alt"></i>
                       <?= htmlspecialchars($d['mobile_money_network']) ?>
-                      &nbsp;·&nbsp; <?= date('M j, Y', strtotime($d['payment_date'])) ?>
+                      &nbsp;·&nbsp; <?= timeAgo($d['payment_date']) ?>
                     </span>
                   </div>
                 </div>
@@ -877,6 +960,48 @@ include __DIR__ . '/includes/header.php';
 }
 .cd-verified i { color:#0f172a; margin-top:1px; flex-shrink:0; }
 
+/* ── Recent Supporters Preview ─────────────────────────────── */
+.cd-recent-supporters { margin-top:0; }
+.cd-see-all-btn {
+  background: none; border: none; cursor: pointer;
+  color: #FF6B4A; font-size: .82rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 0; white-space: nowrap;
+}
+.cd-see-all-btn:hover { text-decoration: underline; }
+.cd-recent-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.cd-recent-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 12px;
+  background: #f8fafc; border: 1px solid #f1f5f9;
+  transition: background .15s;
+}
+.cd-recent-row:hover { background: #f1f5f9; }
+.cd-recent-ava {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: .82rem;
+  flex-shrink: 0; letter-spacing: .02em;
+}
+.cd-recent-body { flex: 1; min-width: 0; }
+.cd-recent-name {
+  font-weight: 700; color: #1A2A6C; font-size: .88rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cd-recent-meta { font-size: .74rem; color: #94a3b8; margin-top: 1px; }
+.cd-recent-amt {
+  font-weight: 800; color: #10b981; font-size: .9rem;
+  white-space: nowrap; flex-shrink: 0;
+}
+.cd-see-all-full {
+  width: 100%; margin-top: 14px;
+  background: #fff; border: 2px solid #e2e8f0; border-radius: 12px;
+  padding: 12px; font-size: .86rem; font-weight: 700; color: #1A2A6C;
+  cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.cd-see-all-full:hover { border-color: #FF6B4A; color: #FF6B4A; background: #fff8f6; }
+
 /* Inline donate CTA */
 .cd-inline-cta {
   background:#0f172a; border-radius:16px;
@@ -1268,6 +1393,19 @@ document.querySelectorAll('.cd-tab').forEach(function(tab) {
     if (panel) { panel.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
   });
 });
+
+// ── switchTab — called by "See all" buttons in story panel ──
+function switchTab(tabName) {
+  document.querySelectorAll('.cd-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.cd-panel').forEach(p => p.classList.remove('active'));
+  var btn = document.querySelector('.cd-tab[data-tab="' + tabName + '"]');
+  if (btn) btn.classList.add('active');
+  var panel = document.getElementById('panel-' + tabName);
+  if (panel) { panel.classList.add('active'); }
+  // Scroll to tabbar
+  var tabbar = document.getElementById('cdTabbar');
+  if (tabbar) tabbar.scrollIntoView({behavior:'smooth', block:'start'});
+}
 
 // ── FAQ toggle ─────────────────────────────────────────────
 function toggleFaq(btn) {
