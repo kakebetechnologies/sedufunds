@@ -105,3 +105,135 @@ function logAdminAction(
          VALUES ($adminId, '$action', '$targetType', $targetId, '$targetName', '$changesJson', '$ip', '$ua')"
     );
 }
+
+// ── Logout Function ────────────────────────────────────────
+
+function logoutUser(string $redirect = '/chama/login.php?msg=logged_out'): void {
+    // Clear all session variables
+    $_SESSION = array();
+    
+    // Delete the session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httponly"]
+        );
+    }
+    
+    // Destroy the session
+    session_destroy();
+    
+    // Redirect to login page
+    header("Location: $redirect");
+    exit;
+}
+
+// ── Auth Check for API Endpoints ──────────────────────────
+
+/**
+ * Check if user is authenticated via API (for AJAX requests)
+ * Returns JSON response if not authenticated
+ */
+function requireLoginApi(): void {
+    if (!isLoggedIn()) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+        exit;
+    }
+}
+
+function requireAdminApi(): void {
+    if (!isLoggedIn() || !isAdmin()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Forbidden. Admin access required.']);
+        exit;
+    }
+}
+
+// ── Session regeneration for security ─────────────────────
+
+function regenerateSession(): void {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
+    }
+}
+
+// ── Get user by ID ─────────────────────────────────────────
+
+function getUserById(mysqli $conn, int $userId): ?array {
+    $stmt = $conn->prepare("SELECT user_id, full_name, email, phone, role, country, avatar_url, is_active, is_verified FROM users WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc();
+}
+
+// ── Update user last login ─────────────────────────────────
+
+function updateLastLogin(mysqli $conn, int $userId): void {
+    $stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+}
+
+// ── Password verification (plain text for testing) ────────
+
+function verifyUserPassword(mysqli $conn, string $identifier, string $password): ?array {
+    // Check if identifier is email or phone
+    $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
+    
+    if ($isEmail) {
+        $sql = "SELECT * FROM users WHERE email = '" . mysqli_real_escape_string($conn, $identifier) . "' AND is_active = 1";
+    } else {
+        $phone = preg_replace('/[^0-9]/', '', $identifier);
+        $sql = "SELECT * FROM users WHERE phone = '" . mysqli_real_escape_string($conn, $phone) . "' AND is_active = 1";
+    }
+    
+    $result = mysqli_query($conn, $sql);
+    $user = mysqli_fetch_assoc($result);
+    
+    // Plain text password comparison (for testing)
+    if ($user && $password === $user['password_hash']) {
+        return $user;
+    }
+    
+    return null;
+}
+
+// ── Login user function ────────────────────────────────────
+
+function loginUser(mysqli $conn, array $user): void {
+    // Set session variables
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['role'] = $user['role'];
+    $_SESSION['user'] = [
+        'user_id' => $user['user_id'],
+        'full_name' => $user['full_name'],
+        'email' => $user['email'],
+        'phone' => $user['phone'],
+        'role' => $user['role'],
+        'avatar_url' => $user['avatar_url'] ?? ''
+    ];
+    
+    // Update last login
+    updateLastLogin($conn, $user['user_id']);
+    
+    // Regenerate session for security
+    regenerateSession();
+}
+
+// ── Get redirect URL after login ──────────────────────────
+
+function getLoginRedirectUrl(array $user): string {
+    if ($user['role'] === 'admin') {
+        return '/admin/index.php';
+    }
+    return '/dashboard.php';
+}
+?>

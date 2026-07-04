@@ -1,12 +1,29 @@
-﻿<?php
+<?php
 // ============================================================
 // ChamaFunds – dashboard.php (User Dashboard)
 // ============================================================
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
-if (!isset($_SESSION['user_id'])) { header('Location: <?= BASE ?>/login.php?msg=unauthorized'); exit; }
 
-$conn = require_once __DIR__ . '/db/connection.php';
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ' . BASE . '/login.php?msg=unauthorized');
+    exit;
+}
+
+// ============================================================
+// FIX: Check if $conn exists, if not, load it
+// ============================================================
+if (!isset($conn) || !$conn) {
+    $conn = require_once __DIR__ . '/db/connection.php';
+}
+
+// If connection still fails, show error
+if (!$conn) {
+    die("Database connection failed. Please try again later.");
+}
+
 $uid  = (int)$_SESSION['user_id'];
 $user = $_SESSION['user'];
 
@@ -99,7 +116,7 @@ $availableBalance = $totalRaised - $withdrawnTotal;
       <?php endif; ?>
     </nav>
     <div class="sidebar-footer">
-      <a href="<?= BASE ?>/api/auth.php?action=logout" class="sidebar-link logout-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+      <a href="<?= BASE ?>/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
   </aside>
 

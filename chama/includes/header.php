@@ -3,7 +3,12 @@
 // ChamaFunds – includes/header.php
 // Shared public navbar (included in public-facing .php pages)
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/config.php';
 
 // Determine active page for nav highlighting
@@ -12,6 +17,16 @@ $isLoggedIn  = isset($_SESSION['user_id']);
 $userRole    = $_SESSION['role'] ?? 'guest';
 $userName    = $_SESSION['user']['full_name'] ?? '';
 $userAvatar  = $_SESSION['user']['avatar_url'] ?? '';
+
+// ============================================================
+// SESSION HELPERS (for use in this file)
+// ============================================================
+function getBasePath() {
+    return defined('BASE') ? BASE : '';
+}
+
+// Get the correct logout URL
+$logoutUrl = getBasePath() . '/logout.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,7 +69,10 @@ $userAvatar  = $_SESSION['user']['avatar_url'] ?? '';
             <a href="<?= BASE ?>/admin/index.php"><i class="fas fa-shield-alt"></i> Admin Panel</a>
             <?php endif; ?>
             <a href="<?= BASE ?>/profile.php"><i class="fas fa-user-cog"></i> Profile</a>
-            <a href="<?= BASE ?>/api/auth.php?action=logout" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+           <!-- Change this line -->
+            <a href="<?= BASE ?>/logout.php" class="logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
           </div>
         </div>
       <?php else: ?>
@@ -84,7 +102,7 @@ $userAvatar  = $_SESSION['user']['avatar_url'] ?? '';
     <?php if ($userRole === 'admin'): ?>
     <a href="<?= BASE ?>/admin/index.php"><i class="fas fa-shield-alt"></i> Admin Panel</a>
     <?php endif; ?>
-    <a href="<?= BASE ?>/api/auth.php?action=logout" style="color:#ef4444;">Logout</a>
+    <a href="<?= $logoutUrl ?>" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
   <?php else: ?>
     <a href="<?= BASE ?>/login.php">Log In</a>
     <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary mobile-menu-cta">Start a Campaign</a>

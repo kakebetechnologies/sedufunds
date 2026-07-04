@@ -1,34 +1,27 @@
-﻿<?php
+<?php
 // ============================================================
 // ChamaFunds – api/auth.php
 // ============================================================
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-
-// Include config - this will give us $conn
 require_once __DIR__ . '/../includes/config.php';
 
-// $conn should now be available from config.php
-// But to be safe, let's make sure we have it
+// Get database connection
 if (!isset($conn)) {
-    // If $conn isn't set, get it directly
     $conn = require_once __DIR__ . '/../db/connection.php';
 }
 
 $action = $_GET['action'] ?? '';
 
 if ($action === 'login') {
-    // Get form data
     $identifier = trim($_POST['identifier'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Validate input
     if (empty($identifier) || empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Please enter both email/phone and password.']);
         exit;
     }
 
-    // Check if identifier is email or phone
     $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
     
     if ($isEmail) {
@@ -41,9 +34,8 @@ if ($action === 'login') {
     $result = mysqli_query($conn, $sql);
     $user = mysqli_fetch_assoc($result);
 
-    // Verify password
-    if ($user && password_verify($password, $user['password_hash'])) {
-        // Login successful
+    // Plain text password verification
+    if ($user && $password === $user['password_hash']) {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['user'] = [
@@ -55,19 +47,19 @@ if ($action === 'login') {
             'avatar_url' => $user['avatar_url'] ?? ''
         ];
 
-        // Update last login
         mysqli_query($conn, "UPDATE users SET last_login = NOW() WHERE user_id = " . $user['user_id']);
 
-        // Determine redirect
-        if ($user['role'] === 'admin') {
-            $dest = '/admin/index.php';
-        } else {
-            $dest = '/dashboard.php';
-        }
-
+        // ============================================================
+        // FIX: Correct redirect path
+        // ============================================================
+        $dest = ($user['role'] === 'admin') ? '/admin/index.php' : '/dashboard.php';
+        
+        // Remove /api from BASE if present
+        $base = str_replace('/api', '', BASE);
+        
         echo json_encode([
             'success' => true,
-            'redirect' => BASE . $dest
+            'redirect' => $base . $dest
         ]);
         exit;
     } else {
@@ -76,14 +68,29 @@ if ($action === 'login') {
     }
 }
 
-// Handle logout
+// In api/auth.php
 if ($action === 'logout') {
-    session_destroy();
-    echo json_encode(['success' => true, 'redirect' => BASE . '/login.php?msg=logged_out']);
+    // Include auth functions
+    require_once __DIR__ . '/../includes/auth.php';
+    
+    // Call logout function - this will redirect
+    logoutUser('/chama/login.php?msg=logged_out');
     exit;
 }
 
-// Fallback
-echo json_encode(['success' => false, 'message' => 'Invalid action.']);
-exit;
+
+// In api/auth.php
+if ($action === 'logout') {
+    session_destroy();
+    
+    // Get base URL without /api
+    $base = str_replace('/api', '', BASE);
+    
+    echo json_encode([
+        'success' => true,
+        'redirect' => $base . '/login.php?msg=logged_out'
+    ]);
+    exit;
+}
+
 ?>

@@ -1,23 +1,68 @@
-﻿<?php
+<?php
 // ============================================================
-// ChamaFunds – admin/index.php  (Admin Panel)
+// ChamaFunds – admin/index.php (Admin Panel)
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: <?= BASE ?>/login.php?msg=unauthorized'); exit;
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
-$conn  = require_once __DIR__ . '/../db/connection.php';
+
+// Check if user is logged in and is admin
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header('Location: /chama/login.php?msg=unauthorized');
+    exit;
+}
+
+// ============================================================
+// FIX: Load config first, then connection
+// ============================================================
+require_once __DIR__ . '/../includes/config.php';
+
+// After require_once __DIR__ . '/../includes/config.php';
+echo '<!-- BASE URL: ' . BASE . ' -->';
+
+
+// Ensure database connection exists
+if (!isset($conn) || !$conn) {
+    $conn = require_once __DIR__ . '/../db/connection.php';
+}
+
+// If connection still fails, show error
+if (!$conn) {
+    die("Database connection failed. Please try again later.");
+}
+
 $admin = $_SESSION['user'];
 
-// ── Live stats ────────────────────────────────────────────────
-$totalCampaigns    = $conn->query("SELECT COUNT(*) FROM campaigns")->fetch_row()[0];
-$activeCampaigns   = $conn->query("SELECT COUNT(*) FROM campaigns WHERE status='active'")->fetch_row()[0];
-$totalUsers        = $conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
-$totalDonations    = $conn->query("SELECT COALESCE(SUM(amount),0) FROM donations WHERE status='completed'")->fetch_row()[0];
-$totalFees         = $conn->query("SELECT COALESCE(SUM(fee_amount),0) FROM donations WHERE status='completed'")->fetch_row()[0];
-$pendingWd         = $conn->query("SELECT COUNT(*) FROM withdrawals WHERE status='pending'")->fetch_row()[0];
-$newUsersWeek      = $conn->query("SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(),INTERVAL 7 DAY)")->fetch_row()[0];
-$newCampsWeek      = $conn->query("SELECT COUNT(*) FROM campaigns WHERE created_at >= DATE_SUB(NOW(),INTERVAL 7 DAY)")->fetch_row()[0];
+// ── Live stats with error handling ─────────────────────────────
+function getCount($conn, $query) {
+    $result = $conn->query($query);
+    if ($result) {
+        $row = $result->fetch_row();
+        return $row ? (int)$row[0] : 0;
+    }
+    return 0;
+}
+
+function getSum($conn, $query) {
+    $result = $conn->query($query);
+    if ($result) {
+        $row = $result->fetch_row();
+        return $row ? (float)$row[0] : 0;
+    }
+    return 0;
+}
+
+// Safe stats
+$totalCampaigns    = getCount($conn, "SELECT COUNT(*) FROM campaigns");
+$activeCampaigns   = getCount($conn, "SELECT COUNT(*) FROM campaigns WHERE status='active'");
+$totalUsers        = getCount($conn, "SELECT COUNT(*) FROM users");
+$totalDonations    = getSum($conn, "SELECT COALESCE(SUM(amount),0) FROM donations WHERE status='completed'");
+$totalFees         = getSum($conn, "SELECT COALESCE(SUM(fee_amount),0) FROM donations WHERE status='completed'");
+$pendingWd         = getCount($conn, "SELECT COUNT(*) FROM withdrawals WHERE status='pending'");
+$newUsersWeek      = getCount($conn, "SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(),INTERVAL 7 DAY)");
+$newCampsWeek      = getCount($conn, "SELECT COUNT(*) FROM campaigns WHERE created_at >= DATE_SUB(NOW(),INTERVAL 7 DAY)");
 
 // Campaigns list
 $allCampaigns = $conn->query(
@@ -26,16 +71,22 @@ $allCampaigns = $conn->query(
      FROM campaigns c JOIN users u ON c.campaigner_id=u.user_id
      ORDER BY c.created_at DESC"
 );
+if (!$allCampaigns) $allCampaigns = false;
+
 // Users list
 $allUsers = $conn->query(
     "SELECT user_id, full_name, email, phone, role, country, is_active, is_verified, created_at
      FROM users ORDER BY created_at DESC"
 );
+if (!$allUsers) $allUsers = false;
+
 // Donations
 $allDonations = $conn->query(
     "SELECT d.*, c.title AS campaign_title FROM donations d
      JOIN campaigns c ON d.campaign_id=c.campaign_id ORDER BY d.created_at DESC LIMIT 50"
 );
+if (!$allDonations) $allDonations = false;
+
 // Pending withdrawals
 $pendingWithdrawals = $conn->query(
     "SELECT w.*, c.title AS campaign_title, u.full_name AS campaigner_name, c.currency
@@ -44,26 +95,39 @@ $pendingWithdrawals = $conn->query(
      JOIN users u ON w.campaigner_id=u.user_id
      WHERE w.status='pending' ORDER BY w.requested_at DESC"
 );
+if (!$pendingWithdrawals) $pendingWithdrawals = false;
+
 // Countries
 $countries = $conn->query("SELECT * FROM countries ORDER BY country_name");
+if (!$countries) $countries = false;
+
 // Settings
-$settings  = [];
-$sRows     = $conn->query("SELECT setting_key,setting_value FROM platform_settings");
-while ($s = $sRows->fetch_assoc()) $settings[$s['setting_key']] = $s['setting_value'];
+$settings = [];
+$sRows = $conn->query("SELECT setting_key, setting_value FROM platform_settings");
+if ($sRows) {
+    while ($s = $sRows->fetch_assoc()) {
+        $settings[$s['setting_key']] = $s['setting_value'];
+    }
+}
+
 // Admin logs
 $adminLogs = $conn->query(
     "SELECT l.*, u.full_name AS admin_name FROM admin_logs l
      JOIN users u ON l.admin_id=u.user_id ORDER BY l.created_at DESC LIMIT 30"
 );
+if (!$adminLogs) $adminLogs = false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel – ChamaFunds</title>
   <meta name="robots" content="noindex,nofollow" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <!-- ✅ FIXED CSS PATH - WORKS ON LOCAL AND LIVE -->
   <link rel="stylesheet" href="/chama/css/style.css" />
 </head>
 <body>
@@ -92,16 +156,16 @@ $adminLogs = $conn->query(
       <button class="tab-btn sidebar-link" data-tab="tab-logs"><i class="fas fa-list" style="margin-right:10px;"></i>Audit Logs</button>
       <button class="tab-btn sidebar-link" data-tab="tab-analytics"><i class="fas fa-chart-line" style="margin-right:10px;"></i>Analytics</button>
       <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 12px;" />
-      <a href="/chama/create-campaign.php" class="sidebar-link" style="background:linear-gradient(135deg,#FF6B4A,#e85a3a);color:#fff;border-radius:10px;margin:4px 0;font-weight:700;">
+      <a href="<?= BASE ?>/create-campaign.php" class="sidebar-link" style="background:linear-gradient(135deg,#FF6B4A,#e85a3a);color:#fff;border-radius:10px;margin:4px 0;font-weight:700;">
         <i class="fas fa-plus-circle" style="margin-right:10px;"></i>Create Campaign
       </a>
-      <a href="/chama/dashboard.php" class="sidebar-link" style="color:#6b7280;">
+      <a href="<?= BASE ?>/dashboard.php" class="sidebar-link" style="color:#6b7280;">
         <i class="fas fa-th-large" style="margin-right:10px;"></i>My Dashboard
       </a>
     </nav>
-    <div class="sidebar-footer">
-      <a href="/chama/dashboard.php" class="sidebar-link"><i class="fas fa-arrow-left"></i>Back to Dashboard</a>
-      <a href="/chama/api/auth.php?action=logout" class="sidebar-link logout-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+  <div class="sidebar-footer">
+  <!--<a href="/chama/dashboard.php" class="sidebar-link"><i class="fas fa-arrow-left"></i>Back to Dashboard</a>-->
+  <a href="/chama/logout.php" class="sidebar-link" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
   </aside>
 
@@ -114,7 +178,7 @@ $adminLogs = $conn->query(
           <h1>Good <?= date('H') < 12 ? 'morning' : (date('H') < 17 ? 'afternoon' : 'evening') ?>, <?= htmlspecialchars(explode(' ', $admin['full_name'])[0]) ?>! 👋</h1>
           <p>Platform overview — <?= date('F j, Y') ?></p>
         </div>
-        <a href="/chama/create-campaign.php" class="btn btn-primary btn-sm">
+        <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary btn-sm">
           <i class="fas fa-plus" style="margin-right:6px;"></i>New Campaign
         </a>
       </div>
@@ -140,7 +204,7 @@ $adminLogs = $conn->query(
           <table>
             <thead><tr><th>Ref</th><th>Campaign</th><th>Donor</th><th>Amount</th><th>Fee</th><th>Net</th><th>Status</th><th>Date</th></tr></thead>
             <tbody>
-              <?php $allDonations->data_seek(0); $i=0; while ($d = $allDonations->fetch_assoc() and $i < 8): $i++; ?>
+              <?php if ($allDonations): $allDonations->data_seek(0); $i=0; while ($d = $allDonations->fetch_assoc() and $i < 8): $i++; ?>
               <tr>
                 <td style="font-family:monospace;font-size:.72rem;color:#9ca3af;"><?= htmlspecialchars($d['transaction_reference'] ?? '—') ?></td>
                 <td style="color:#6b7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($d['campaign_title']) ?></td>
@@ -151,7 +215,7 @@ $adminLogs = $conn->query(
                 <td><span class="status-badge status-<?= $d['status'] === 'completed' ? 'approved' : $d['status'] ?>"><?= ucfirst($d['status']) ?></span></td>
                 <td style="font-size:.75rem;color:#9ca3af;"><?= date('M j', strtotime($d['created_at'])) ?></td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -166,7 +230,7 @@ $adminLogs = $conn->query(
           <div class="filter-bar" style="margin:0;">
             <div class="search-input-wrap" style="max-width:220px;"><i class="fas fa-search"></i><input type="text" id="campSearch" class="form-input" placeholder="Search…" oninput="filterTable('campsTable',this.value)" /></div>
           </div>
-          <a href="/chama/create-campaign.php" class="btn btn-primary btn-sm">
+          <a href="<?= BASE ?>/create-campaign.php" class="btn btn-primary btn-sm">
             <i class="fas fa-plus" style="margin-right:6px;"></i>New Campaign
           </a>
         </div>
@@ -176,10 +240,10 @@ $adminLogs = $conn->query(
           <table id="campsTable">
             <thead><tr><th>ID</th><th>Title</th><th>Campaigner</th><th>Goal</th><th>Raised</th><th>Progress</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
             <tbody>
-              <?php while ($c = $allCampaigns->fetch_assoc()): $pct = min(100,(float)$c['pct']); ?>
+              <?php if ($allCampaigns): while ($c = $allCampaigns->fetch_assoc()): $pct = min(100,(float)$c['pct']); ?>
               <tr>
                 <td style="font-size:.75rem;color:#9ca3af;">#<?= $c['campaign_id'] ?></td>
-                <td style="font-weight:600;color:#1A2A6C;max-width:160px;"><a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>" style="color:#1A2A6C;"><?= htmlspecialchars($c['title']) ?></a></td>
+                <td style="font-weight:600;color:#1A2A6C;max-width:160px;"><a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>" style="color:#1A2A6C;"><?= htmlspecialchars($c['title']) ?></a></td>
                 <td><?= htmlspecialchars($c['campaigner_name']) ?></td>
                 <td><?= $c['currency'] ?> <?= number_format($c['goal_amount']) ?></td>
                 <td><?= $c['currency'] ?> <?= number_format($c['raised_amount']) ?></td>
@@ -188,7 +252,7 @@ $adminLogs = $conn->query(
                 <td style="font-size:.75rem;color:#9ca3af;"><?= date('M j, Y', strtotime($c['created_at'])) ?></td>
                 <td>
                   <div style="display:flex;gap:8px;font-size:.85rem;">
-                    <a href="/chama/campaign-detail.php?id=<?= $c['campaign_id'] ?>" title="View" style="color:#1A2A6C;"><i class="fas fa-eye"></i></a>
+                    <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>" title="View" style="color:#1A2A6C;"><i class="fas fa-eye"></i></a>
                     <?php if ($c['status'] === 'active'): ?>
                     <button onclick="adminCampAction(<?= $c['campaign_id'] ?>,'paused')" title="Pause" style="color:#f59e0b;background:none;border:none;cursor:pointer;font-size:.85rem;"><i class="fas fa-pause"></i></button>
                     <?php elseif ($c['status'] === 'draft'): ?>
@@ -201,7 +265,7 @@ $adminLogs = $conn->query(
                   </div>
                 </td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -219,7 +283,7 @@ $adminLogs = $conn->query(
           <table id="usersTable">
             <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Country</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
             <tbody>
-              <?php while ($u = $allUsers->fetch_assoc()):
+              <?php if ($allUsers): while ($u = $allUsers->fetch_assoc()):
                 $roleColor = $u['role']==='admin' ? '#1e40af;background:#dbeafe' : ($u['role']==='campaigner' ? '#6d28d9;background:#ede9fe' : '#065f46;background:#d1fae5');
               ?>
               <tr>
@@ -248,7 +312,7 @@ $adminLogs = $conn->query(
                   </div>
                 </td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -266,7 +330,7 @@ $adminLogs = $conn->query(
           <table id="txTable">
             <thead><tr><th>Ref</th><th>Campaign</th><th>Donor</th><th>Network</th><th>Amount</th><th>Fee</th><th>Net</th><th>Status</th><th>Date</th></tr></thead>
             <tbody>
-              <?php $allDonations->data_seek(0); while ($d = $allDonations->fetch_assoc()): ?>
+              <?php if ($allDonations): $allDonations->data_seek(0); while ($d = $allDonations->fetch_assoc()): ?>
               <tr>
                 <td style="font-family:monospace;font-size:.72rem;color:#9ca3af;"><?= htmlspecialchars($d['transaction_reference'] ?? '—') ?></td>
                 <td style="color:#6b7280;font-size:.82rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($d['campaign_title']) ?></td>
@@ -278,7 +342,7 @@ $adminLogs = $conn->query(
                 <td><span class="status-badge status-<?= $d['status']==='completed'?'approved':$d['status'] ?>"><?= ucfirst($d['status']) ?></span></td>
                 <td style="font-size:.75rem;color:#9ca3af;"><?= date('M j, Y', strtotime($d['created_at'])) ?></td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -336,7 +400,7 @@ $adminLogs = $conn->query(
           <table>
             <thead><tr><th>Country</th><th>Code</th><th>Currency</th><th>Payment Partner</th><th>Fee %</th><th>Campaigns</th><th>Users</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
-              <?php while ($ct = $countries->fetch_assoc()): ?>
+              <?php if ($countries): while ($ct = $countries->fetch_assoc()): ?>
               <tr>
                 <td style="font-weight:600;color:#1A2A6C;"><?= htmlspecialchars($ct['country_name']) ?></td>
                 <td style="font-family:monospace;"><?= htmlspecialchars($ct['country_code']) ?></td>
@@ -354,7 +418,7 @@ $adminLogs = $conn->query(
                   </button>
                 </td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -437,7 +501,7 @@ $adminLogs = $conn->query(
           <table>
             <thead><tr><th>Admin</th><th>Action</th><th>Target Type</th><th>Target</th><th>IP Address</th><th>Time</th></tr></thead>
             <tbody>
-              <?php while ($log = $adminLogs->fetch_assoc()): ?>
+              <?php if ($adminLogs): while ($log = $adminLogs->fetch_assoc()): ?>
               <tr>
                 <td style="font-weight:600;color:#1A2A6C;font-size:.85rem;"><?= htmlspecialchars($log['admin_name']) ?></td>
                 <td style="font-size:.85rem;"><?= htmlspecialchars($log['action']) ?></td>
@@ -446,7 +510,7 @@ $adminLogs = $conn->query(
                 <td style="font-family:monospace;font-size:.75rem;color:#9ca3af;"><?= htmlspecialchars($log['ip_address'] ?? '—') ?></td>
                 <td style="font-size:.75rem;color:#9ca3af;"><?= date('M j, Y H:i', strtotime($log['created_at'])) ?></td>
               </tr>
-              <?php endwhile; ?>
+              <?php endwhile; endif; ?>
             </tbody>
           </table>
         </div>
@@ -500,7 +564,7 @@ async function apiPost(url, data) {
 // ── Campaign actions ─────────────────────────────────────────
 async function adminCampAction(id, status) {
   if (!confirm('Set campaign #' + id + ' to "' + status + '"?')) return;
-  var d = await apiPost('/chama/api/campaigns.php?action=set_status', {campaign_id: id, status: status});
+  var d = await apiPost('<?= BASE ?>/api/campaigns.php?action=set_status', {campaign_id: id, status: status});
   adminAlert(d.message, d.success);
   if (d.success) setTimeout(function(){ location.reload(); }, 1200);
 }
@@ -508,13 +572,13 @@ async function adminCampAction(id, status) {
 // ── Withdrawal actions ───────────────────────────────────────
 async function approveWithdrawal(id) {
   if (!confirm('Approve withdrawal #' + id + '?')) return;
-  var d = await apiPost('/chama/api/withdrawals.php?action=approve', {withdrawal_id: id});
+  var d = await apiPost('<?= BASE ?>/api/withdrawals.php?action=approve', {withdrawal_id: id});
   adminAlert(d.message, d.success);
   if (d.success) setTimeout(function(){ location.reload(); }, 1200);
 }
 async function rejectWithdrawal(id) {
   var reason = prompt('Reason for rejection (optional):') || 'Rejected by admin.';
-  var d = await apiPost('/chama/api/withdrawals.php?action=reject', {withdrawal_id: id, reason: reason});
+  var d = await apiPost('<?= BASE ?>/api/withdrawals.php?action=reject', {withdrawal_id: id, reason: reason});
   adminAlert(d.message, d.success);
   if (d.success) setTimeout(function(){ location.reload(); }, 1200);
 }
@@ -523,23 +587,23 @@ async function rejectWithdrawal(id) {
 async function toggleUser(id, isActive) {
   var action = isActive ? 'ban' : 'unban';
   if (!confirm((isActive ? 'Ban' : 'Unban') + ' this user?')) return;
-  var d = await apiPost('/chama/api/users.php?action=toggle_active', {user_id: id});
+  var d = await apiPost('<?= BASE ?>/api/users.php?action=toggle_active', {user_id: id});
   adminAlert(d.message, d.success);
   if (d.success) setTimeout(function(){ location.reload(); }, 1200);
 }
 async function updateRole(id, role) {
-  var d = await apiPost('/chama/api/users.php?action=update_role', {user_id: id, role: role});
+  var d = await apiPost('<?= BASE ?>/api/users.php?action=update_role', {user_id: id, role: role});
   adminAlert(d.message, d.success);
 }
 
 // ── Country actions ──────────────────────────────────────────
 async function toggleCountry(id, isActive) {
-  var d = await apiPost('/chama/api/admin.php?action=toggle_country', {country_id: id});
+  var d = await apiPost('<?= BASE ?>/api/admin.php?action=toggle_country', {country_id: id});
   adminAlert(d.message, d.success);
   if (d.success) setTimeout(function(){ location.reload(); }, 1200);
 }
 async function addCountry() {
-  var d = await apiPost('/chama/api/admin.php?action=add_country', {
+  var d = await apiPost('<?= BASE ?>/api/admin.php?action=add_country', {
     country_name:    document.getElementById('newCountryName').value,
     country_code:    document.getElementById('newCountryCode').value,
     currency_code:   document.getElementById('newCurrencyCode').value,
@@ -558,7 +622,7 @@ async function saveSettings(formId) {
   var form = document.getElementById(formId);
   var fd   = new FormData(form);
   fd.append('action', 'save_settings');
-  var res  = await fetch('/chama/api/admin.php?action=save_settings', {method:'POST', body: fd});
+  var res  = await fetch('<?= BASE ?>/api/admin.php?action=save_settings', {method:'POST', body: fd});
   var data = await res.json();
   var msg  = document.getElementById('settingsMsg');
   msg.textContent = data.message;
@@ -571,7 +635,7 @@ document.getElementById('settingsFees').addEventListener('submit', function(e){ 
 
 async function toggleSetting(key, currentVal, btn) {
   var newVal = !currentVal;
-  var d = await apiPost('/chama/api/admin.php?action=save_settings', {[key]: newVal ? 'true' : 'false'});
+  var d = await apiPost('<?= BASE ?>/api/admin.php?action=save_settings', {[key]: newVal ? 'true' : 'false'});
   if (d.success) {
     btn.style.background = newVal ? '#FF6B4A' : '#d1d5db';
     var knob = btn.querySelector('span');
@@ -600,7 +664,7 @@ document.querySelector('.admin-layout').style.paddingTop = window.innerWidth < 1
 <script>
 // ── Charts (loaded from live DB data via API) ─────────────────
 (async function initCharts() {
-  var res  = await fetch('/chama/api/admin.php?action=stats');
+  var res  = await fetch('<?= BASE ?>/api/admin.php?action=stats');
   var data = await res.json();
   if (!data.success) return;
 
