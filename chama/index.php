@@ -9,8 +9,12 @@ $pageTitle       = 'ChamaFunds – Pool Money Together for What Matters';
 $pageDescription = 'Uganda\'s mobile money crowdfunding platform. Launch a campaign in 60 seconds, receive funds via MTN & Airtel Money. Free to start — same-day payout.';
 
 // ── OG / Social meta ─────────────────────────────────────────
-$siteUrl  = 'https://chama.kakebeshop.com';
-$ogImage  = $siteUrl . '/og-image.php';   // dynamic branded card
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    $protocol = trim($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https' ? 'https' : $protocol;
+}
+$siteUrl  = $protocol . '://' . $_SERVER['HTTP_HOST'] . rtrim(str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME'])), '/');
+$ogImage  = BASE . '/og-image.php';
 $ogTitle  = 'ChamaFunds – Pool Money Together for What Matters';
 $ogDesc   = 'Launch a fundraising campaign in 60 seconds. Free to start. Receive funds directly to your mobile money — MTN, Airtel & more. Trusted by thousands across Africa.';
 
@@ -29,7 +33,6 @@ $extraCss = <<<HTML
   <meta property="og:locale"           content="en_UG"/>
   <!-- ══ Twitter / X ══ -->
   <meta name="twitter:card"            content="summary_large_image"/>
-  <meta name="twitter:site"            content="@ChamaFunds"/>
   <meta name="twitter:title"           content="{$ogTitle}"/>
   <meta name="twitter:description"     content="{$ogDesc}"/>
   <meta name="twitter:image"           content="{$ogImage}"/>

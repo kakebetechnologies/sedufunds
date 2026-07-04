@@ -96,7 +96,7 @@ $pill = '● Free to start  ●  MTN & Airtel Money  ●  Same-day payout';
 imagestring($img, 2, 72, $H - 90, $pill, $green);
 
 // ── Bottom URL ───────────────────────────────────────────────
-imagestring($img, 2, 72, $H - 60, 'chama.kakebeshop.com', $muted);
+imagestring($img, 2, 72, $H - 60, $_SERVER['HTTP_HOST'], $muted);
 
 // ── Output ───────────────────────────────────────────────────
 imagepng($img);
