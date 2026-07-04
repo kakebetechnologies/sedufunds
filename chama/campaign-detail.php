@@ -89,20 +89,28 @@ $isOwner   = isset($_SESSION['user_id']) &&
              ($_SESSION['user_id'] == $c['campaigner_id'] || ($_SESSION['role'] ?? '') === 'admin');
 
 $protocol     = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+// Also check proxy headers (common on cPanel/shared hosting)
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    $protocol = trim($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https' ? 'https' : $protocol;
+}
 $canonicalUrl = BASE . '/campaign-detail.php?id=' . $cid;
 
-// ── OG Image — must be a fully-qualified absolute URL ────────
+// ── OG Image — must be fully-qualified HTTPS URL for WhatsApp/Facebook ──
 if (!empty($campaignImages[0]['image_url'])) {
     $rawImg = $campaignImages[0]['image_url'];
     if (strpos($rawImg, 'http') === 0) {
-        $ogImage = $rawImg; // already absolute
+        // Already absolute — force https if live
+        $ogImage = $protocol === 'https' ? preg_replace('#^http://#', 'https://', $rawImg) : $rawImg;
     } else {
-        // Stored as relative path e.g. /uploads/campaigns/file.jpg
-        // Strip any /chama prefix for live, keep it for local
-        $ogImage = $protocol . '://' . $_SERVER['HTTP_HOST'] . $rawImg;
+        // Relative path stored in DB e.g. /uploads/campaigns/file.jpg
+        // BASE already has the correct host+subfolder so extract just the host
+        $host    = $_SERVER['HTTP_HOST'];
+        // If the rawImg already starts with /sedufunds/chama strip the double path
+        $ogImage = $protocol . '://' . $host . $rawImg;
     }
 } else {
-    $ogImage = $heroImg; // Unsplash fallback
+    // Unsplash fallback — already absolute HTTPS
+    $ogImage = $heroImg;
 }
 
 $ogTitle      = htmlspecialchars($c['title'], ENT_QUOTES);
