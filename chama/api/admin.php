@@ -7,7 +7,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 
-// $conn is set by config.php
+require_once __DIR__ . '/../includes/config.php';
 
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);

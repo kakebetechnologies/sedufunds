@@ -7,7 +7,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 header('Content-Type: application/json');
 
-// $conn is set by config.php
+require_once __DIR__ . '/../includes/config.php';
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ── REQUEST withdrawal (logged-in campaigner) ─────────────────

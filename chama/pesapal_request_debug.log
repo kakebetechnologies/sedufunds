@@ -340,3 +340,21 @@ RESPONSE_BODY: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW
 RESPONSE_CODE: 200
 RESPONSE_BODY: {"payment_method":"AirtelUG","amount":1000.0,"created_date":"2026-07-03T22:51:09.91","confirmation_code":"150913178937","order_tracking_id":"7c321914-efb0-4075-9fc1-da309aacbcb9","payment_status_description":"Completed","description":null,"message":"Request processed successfully","payment_account":"759526143","call_back_url":"https://undpconnect.org/chama/payment_callback.php?donation_id=32&OrderTrackingId=7c321914-efb0-4075-9fc1-da309aacbcb9&OrderMerchantReference=CF_6a48128e0482c_1783108238","status_code":1,"merchant_reference":"CF_6a48128e0482c_1783108238","account_number":null,"payment_status_code":"","currency":"UGX","error":{"error_type":null,"code":null,"message":null},"status":"200"}
 
+=== 2026-07-04 11:32:02 ===
+URL: https://pay.pesapal.com/v3/api/Auth/RequestToken
+METHOD: POST
+TOKEN: [none]
+BODY: {"consumer_key":"u+nAfIIT\/y0vtZdwd4ypMumdpUUPmyYm","consumer_secret":"r2hNkSEMzL9P4ByZiltITGsj\/3g="}
+
+RESPONSE_CODE: 200
+RESPONSE_BODY: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3VzZXJkYXRhIjoiM2NiYzg0NDUtNzk1NS00OTA4LWIxNzYtZGRjNmI1YTk0NDhiIiwidWlkIjoidStuQWZJSVQveTB2dFpkd2Q0eXBNdW1kcFVVUG15WW0iLCJuYmYiOjE3ODMxNTc1MjMsImV4cCI6MTc4MzE1NzgyMywiaWF0IjoxNzgzMTU3NTIzLCJpc3MiOiJodHRwOi8vcGF5LnBlc2FwYWwuY29tLyIsImF1ZCI6Imh0dHA6Ly9wYXkucGVzYXBhbC5jb20vIn0.6lYtI_HLO9luBiPdnnsmtFX9dQ4Q7SeQXu9c73zIwyw","expiryDate":"2026-07-04T09:37:03.3869634Z","error":null,"status":"200","message":"Request processed successfully"}
+
+=== 2026-07-04 11:32:02 ===
+URL: https://pay.pesapal.com/v3/api/Transactions/SubmitOrderRequest
+METHOD: POST
+TOKEN: eyJhbGciOi...
+BODY: {"id":"CF_6a48d3120b32a_1783157522","currency":"UGX","amount":1000,"description":"Donation to: Empower Rural Farmers with Modern Tools","callback_url":"https:\/\/localhost\/sedufunds\/chama\/payment_callback.php?donation_id=18","billing_address":{"email_address":"0791213543@donor.chamafunds.com","phone_number":"0791213543","country_code":"UG","first_name":"Opio Jonatan","last_name":"","line_1":"N\/A","city":"Uganda","state":"","postal_code":""},"notification_id":"29251393-21c3-4b72-9403-da322310d3c8"}
+
+RESPONSE_CODE: 200
+RESPONSE_BODY: {"order_tracking_id":"68b5dd1c-7be2-468e-86bf-da2fcb51bb5c","merchant_reference":"CF_6a48d3120b32a_1783157522","redirect_url":"https://pay.pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId=68b5dd1c-7be2-468e-86bf-da2fcb51bb5c","error":null,"status":"200"}
+
