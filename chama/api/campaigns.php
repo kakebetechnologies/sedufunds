@@ -173,7 +173,7 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $newId = $conn->insert_id;
 
-    // Save all images to campaign_images (migration_v3.sql must have been run)
+    // ── Save all images to campaign_images ─────────────────────
     try {
         foreach ($imageUrls as $sort => $url) {
             $urlEsc  = $conn->real_escape_string($url);
@@ -185,6 +185,29 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Exception $e) { /* table may not exist yet — non-fatal */ }
 
+    // ============================================================
+    // ✅ SEND NOTIFICATIONS FOR NEW CAMPAIGN
+    // ============================================================
+    // Get the user's full name and email from session
+    $user_full_name = $_SESSION['user']['full_name'] ?? 'Unknown';
+    $user_email = $_SESSION['user']['email'] ?? 'unknown@email.com';
+    $user_phone = $_SESSION['user']['phone'] ?? 'N/A';
+
+    $campaign_data = [
+        'campaign_id' => $newId,
+        'title' => $title,
+        'campaigner_name' => $user_full_name,
+        'campaigner_email' => $user_email,
+        'campaigner_phone' => $user_phone,
+        'category' => $category,
+        'goal_amount' => $goalAmount,
+        'currency' => $currency,
+        'country' => $country
+    ];
+    
+    // Include and call notification
+    require_once __DIR__ . '/../includes/notifications.php';
+    notifyNewCampaign($conn, $newId, $campaign_data);
 
     echo json_encode([
         'success'     => true,

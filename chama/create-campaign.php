@@ -179,6 +179,8 @@ $pageDescription = 'Launch your crowdfunding campaign in Uganda. Free to create,
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
 
+
+
 <div class="cc-page">
   <div class="cc-wrap">
 
@@ -454,6 +456,12 @@ document.getElementById('launchBtn').addEventListener('click', async function(){
       msg.style.cssText='display:block;background:#d1fae5;color:#065f46;padding:14px 18px;border-radius:12px;font-size:.9rem;font-weight:600;margin-bottom:16px;';
       msg.innerHTML='<i class="fas fa-check-circle" style="margin-right:8px;"></i>' + data.message;
       msg.scrollIntoView({behavior:'smooth',block:'center'});
+      
+      // ============================================================
+      // NOTIFICATIONS ARE NOW HANDLED ON THE SERVER SIDE
+      // The API endpoint will call notifyNewCampaign()
+      // ============================================================
+      
       setTimeout(function(){ window.location.href='<?= BASE ?>/dashboard.php'; }, 2500);
     } else {
       window.showToast(data.message || 'Something went wrong','error');
