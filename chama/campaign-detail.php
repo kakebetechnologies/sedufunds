@@ -90,13 +90,28 @@ $isOwner   = isset($_SESSION['user_id']) &&
 
 $protocol     = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $canonicalUrl = BASE . '/campaign-detail.php?id=' . $cid;
-$ogImage      = !empty($campaignImages[0]['image_url'])
-                    ? (strpos($campaignImages[0]['image_url'],'http')===0
-                        ? $campaignImages[0]['image_url']
-                        : $protocol.'://'.$_SERVER['HTTP_HOST'].$campaignImages[0]['image_url'])
-                    : $heroImg;
+
+// ── OG Image — must be a fully-qualified absolute URL ────────
+if (!empty($campaignImages[0]['image_url'])) {
+    $rawImg = $campaignImages[0]['image_url'];
+    if (strpos($rawImg, 'http') === 0) {
+        $ogImage = $rawImg; // already absolute
+    } else {
+        // Stored as relative path e.g. /uploads/campaigns/file.jpg
+        // Strip any /chama prefix for live, keep it for local
+        $ogImage = $protocol . '://' . $_SERVER['HTTP_HOST'] . $rawImg;
+    }
+} else {
+    $ogImage = $heroImg; // Unsplash fallback
+}
+
 $ogTitle      = htmlspecialchars($c['title'], ENT_QUOTES);
-$ogDesc       = htmlspecialchars(substr(strip_tags($c['description']),0,160), ENT_QUOTES);
+$ogDesc       = htmlspecialchars(
+    ($c['currency'] . ' ' . number_format($c['raised_amount']) . ' raised · ' .
+     number_format($totalDonorsAll) . ' supporters · ' .
+     substr(strip_tags($c['description']), 0, 120) . '…'),
+    ENT_QUOTES
+);
 $pageTitle    = htmlspecialchars($c['title']).' – ChamaFunds';
 $pageDescription = $ogDesc;
 
@@ -112,19 +127,27 @@ $shareTextEnc = urlencode($shareText);
 $shareTitleEnc = urlencode($c['title'] . ' – ChamaFunds');
 
 $extraCss = <<<HTML
-  <meta property="og:type"         content="website"/>
-  <meta property="og:url"          content="{$canonicalUrl}"/>
-  <meta property="og:title"        content="{$ogTitle}"/>
-  <meta property="og:description"  content="{$ogDesc}"/>
-  <meta property="og:image"        content="{$ogImage}"/>
-  <meta property="og:image:width"  content="1200"/>
-  <meta property="og:image:height" content="630"/>
-  <meta property="og:site_name"    content="ChamaFunds"/>
-  <meta name="twitter:card"        content="summary_large_image"/>
-  <meta name="twitter:title"       content="{$ogTitle}"/>
-  <meta name="twitter:description" content="{$ogDesc}"/>
-  <meta name="twitter:image"       content="{$ogImage}"/>
-  <link rel="canonical"            href="{$canonicalUrl}"/>
+  <!-- ══ Open Graph (Facebook · WhatsApp · Telegram · iMessage) ══ -->
+  <meta property="og:type"              content="website"/>
+  <meta property="og:url"               content="{$canonicalUrl}"/>
+  <meta property="og:title"             content="{$ogTitle}"/>
+  <meta property="og:description"       content="{$ogDesc}"/>
+  <meta property="og:image"             content="{$ogImage}"/>
+  <meta property="og:image:secure_url"  content="{$ogImage}"/>
+  <meta property="og:image:width"       content="1200"/>
+  <meta property="og:image:height"      content="630"/>
+  <meta property="og:image:alt"         content="{$ogTitle}"/>
+  <meta property="og:site_name"         content="ChamaFunds"/>
+  <meta property="og:locale"            content="en_US"/>
+  <!-- ══ Twitter / X Card ══ -->
+  <meta name="twitter:card"             content="summary_large_image"/>
+  <meta name="twitter:site"             content="@ChamaFunds"/>
+  <meta name="twitter:title"            content="{$ogTitle}"/>
+  <meta name="twitter:description"      content="{$ogDesc}"/>
+  <meta name="twitter:image"            content="{$ogImage}"/>
+  <meta name="twitter:image:alt"        content="{$ogTitle}"/>
+  <!-- ══ Canonical ══ -->
+  <link rel="canonical"                 href="{$canonicalUrl}"/>
 HTML;
 
 include __DIR__ . '/includes/header.php';
@@ -216,9 +239,9 @@ include __DIR__ . '/includes/header.php';
         </button>
       </div>
       <?php if ($c['status']==='active'): ?>
-      <a href="#donateWidget" class="cd-tab-donate">
+      <!-- <a href="#donateWidget" class="cd-tab-donate">
         <i class="fas fa-heart"></i> Donate Now
-      </a>
+      </a> -->
       <?php endif; ?>
     </div>
   </div>
@@ -368,19 +391,6 @@ include __DIR__ . '/includes/header.php';
               </div>
             </div>
           </div>
-
-          <!-- Donate CTA (inline, after story) -->
-          <?php if ($c['status']==='active'): ?>
-          <div class="cd-inline-cta">
-            <div>
-              <p class="cd-inline-cta-title">Support this campaign</p>
-              <p class="cd-inline-cta-sub">Every contribution makes a real difference</p>
-            </div>
-            <a href="#donateWidget" class="cd-donate-btn">
-              <i class="fas fa-heart"></i> Donate Now
-            </a>
-          </div>
-          <?php endif; ?>
 
           <!-- Share -->
           <div class="cd-share-block">
@@ -546,9 +556,10 @@ include __DIR__ . '/includes/header.php';
 
             <!-- Quick amounts -->
             <div class="cd-quick">
-              <button type="button" class="cd-q-btn" data-amount="10000">UGX 10K</button>
+              <button type="button" class="cd-q-btn" data-amount="5000">UGX 5K</button>
+              <button type="button" class="cd-q-btn" data-amount="25000">UGX 10K</button>
               <button type="button" class="cd-q-btn" data-amount="25000">UGX 25K</button>
-              <button type="button" class="cd-q-btn" data-amount="50000">UGX 50K</button>
+              <!-- <button type="button" class="cd-q-btn" data-amount="50000">UGX 50K</button> -->
               <button type="button" class="cd-q-btn" data-amount="100000">UGX 100K</button>
             </div>
 
@@ -556,7 +567,7 @@ include __DIR__ . '/includes/header.php';
               <label class="cd-label">Amount (<?= $c['currency'] ?>) <span>*</span></label>
               <div class="cd-input-wrap">
                 <span class="cd-input-pre"><?= $c['currency'] ?></span>
-                <input type="number" id="contributionAmount" class="cd-input" placeholder="Enter amount" min="1000" value="10000" />
+                <input type="number" id="contributionAmount" class="cd-input" placeholder="e.g. 5000" min="1000" value="5000" />
               </div>
             </div>
 
@@ -580,6 +591,7 @@ include __DIR__ . '/includes/header.php';
                 <option>Airtel Money</option>
                 <option>Orange Money</option>
                 <option>Safaricom M-PESA</option>
+                <option>Card Payment</option>
               </select>
             </div>
 
@@ -887,9 +899,9 @@ include __DIR__ . '/includes/header.php';
   overflow:hidden; margin-bottom:20px;
   box-shadow:0 1px 12px rgba(0,0,0,.07);
 }
-.cd-photo-main { overflow:hidden; max-height:400px; }
+.cd-photo-main { overflow:hidden; max-height:480px; background:#0f172a; }
 .cd-photo-main img {
-  width:100%; max-height:400px; object-fit:cover;
+  width:100%; max-height:480px; object-fit:contain;
   display:block; transition:transform .5s ease;
 }
 .cd-photo-main:hover img { transform:scale(1.02); }
@@ -1288,7 +1300,7 @@ include __DIR__ . '/includes/header.php';
   .cd-quick { flex-wrap:wrap; }
   .cd-q-btn { min-width:calc(50% - 4px); flex:none; }
   /* Photos full-width, slightly shorter */
-  .cd-photo-main { max-height:240px; }
+  .cd-photo-main { max-height:300px; }
   .cd-photo-main img { max-height:240px; }
   /* Compact body padding — leave room for sticky donate bar */
   .cd-body { padding:20px 0 100px; }
