@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!shown) {
     sessionStorage.setItem('cf_db_ping_shown', '1');
     if (dbOk) {
-      window.showToast('✅ Database connected successfully!', 'success');
+      // window.showToast('✅ Database connected successfully!', 'success');
     } else {
       window.showToast('❌ Database connection failed!', 'error');
     }
