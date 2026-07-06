@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dbOk) {
       // window.showToast('✅ Database connected successfully!', 'success');
     } else {
-      window.showToast('❌ Database connection failed!', 'error');
+      window.showToast('❌ Database connections failed!', 'error');
     }
   }
 });
