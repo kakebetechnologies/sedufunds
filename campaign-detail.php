@@ -1,6 +1,9 @@
 <?php
 // ============================================================
 // ChamaFunds – campaign-detail.php  (v4 — major redesign)
+//<?php
+// ============================================================
+// ChamaFunds – campaign-detail.php  (v4 — major redesign)
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
@@ -95,23 +98,32 @@ if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
 }
 $canonicalUrl = BASE . '/campaign-detail.php?id=' . $cid;
 
-// ── OG Image — must be fully-qualified HTTPS URL for WhatsApp/Facebook ──
+// ── OG Image — MUST use campaign's own image, NOT category hero ──
+// Priority: 1) uploaded campaign image  2) main campaign image  3) brand fallback
+$ogImage = '';
+
+// 1️⃣ First uploaded campaign image (from campaign_images table)
 if (!empty($campaignImages[0]['image_url'])) {
-    $rawImg = $campaignImages[0]['image_url'];
-    if (strpos($rawImg, 'http') === 0) {
-        // Already absolute — force https if live
-        $ogImage = $protocol === 'https' ? preg_replace('#^http://#', 'https://', $rawImg) : $rawImg;
-    } else {
-        // Relative path stored in DB e.g. /uploads/campaigns/file.jpg
-        // BASE already has the correct host+subfolder so extract just the host
+    $ogImage = $campaignImages[0]['image_url'];
+} 
+// 2️⃣ Main campaign image (from campaigns table)
+elseif (!empty($c['image_url'])) {
+    $ogImage = $c['image_url'];
+}
+
+// Build absolute URL
+if (!empty($ogImage)) {
+    if (strpos($ogImage, 'http') !== 0) {
         $host    = $_SERVER['HTTP_HOST'];
-        // If the rawImg already starts with /sedufunds/chama strip the double path
-        $ogImage = $protocol . '://' . $host . $rawImg;
+        $ogImage = $protocol . '://' . $host . $ogImage;
     }
 } else {
-    // Unsplash fallback — already absolute HTTPS
-    $ogImage = $heroImg;
+    // 3️⃣ Fallback: brand logo (NOT category hero)
+    $ogImage = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/chama/assets/images/chamafunds-og-default.jpg';
 }
+
+// Force HTTPS (critical for WhatsApp/Facebook previews)
+$ogImage = str_replace('http://', 'https://', $ogImage);
 
 $ogTitle      = htmlspecialchars($c['title'], ENT_QUOTES);
 $ogDesc       = htmlspecialchars(
@@ -160,6 +172,9 @@ HTML;
 
 include __DIR__ . '/includes/header.php';
 ?>
+
+<!-- REST OF YOUR HTML CONTENT REMAINS EXACTLY THE SAME -->
+<!-- (All the HTML, CSS, and JavaScript below stays unchanged) -->
 
 <div class="cd-page">
 
