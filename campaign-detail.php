@@ -119,32 +119,35 @@ if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
 }
 $canonicalUrl = BASE . '/campaign-detail.php?id=' . $cid;
 
-// ── OG Image — MUST use campaign's own image, NOT category hero ──
-// Priority: 1) uploaded campaign image  2) main campaign image  3) brand fallback
+// ── OG Image — campaign's own image, always absolute HTTPS ──
+// By this point $campaignImages URLs are already resolved by resolveImgUrl()
+// Priority: 1) first campaign_images entry  2) campaigns.image_url  3) logo fallback
+
 $ogImage = '';
 
-// 1️⃣ First uploaded campaign image (from campaign_images table)
 if (!empty($campaignImages[0]['image_url'])) {
-    $ogImage = $campaignImages[0]['image_url'];
-} 
-// 2️⃣ Main campaign image (from campaigns table)
-elseif (!empty($c['image_url'])) {
-    $ogImage = $c['image_url'];
+    $ogImage = $campaignImages[0]['image_url']; // already absolute from resolveImgUrl()
+} elseif (!empty($c['image_url'])) {
+    $ogImage = $c['image_url']; // already resolved above
 }
 
-// Build absolute URL
+// If still relative for any reason, make it absolute
+if (!empty($ogImage) && strpos($ogImage, 'http') !== 0) {
+    $ogImage = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/' . ltrim($ogImage, '/');
+}
+
+// Force HTTPS — WhatsApp and Facebook reject HTTP images
 if (!empty($ogImage)) {
-    if (strpos($ogImage, 'http') !== 0) {
-        $host    = $_SERVER['HTTP_HOST'];
-        $ogImage = $protocol . '://' . $host . $ogImage;
-    }
-} else {
-    // 3️⃣ Fallback: brand logo (NOT category hero)
-    $ogImage = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/chama/assets/images/chamafunds-og-default.jpg';
+    $ogImage = preg_replace('#^http://#', 'https://', $ogImage);
 }
 
-// Force HTTPS (critical for WhatsApp/Facebook previews)
-$ogImage = str_replace('http://', 'https://', $ogImage);
+// Fallback to brand logo
+if (empty($ogImage)) {
+    $ogImage = BASE . '/img/logo.png';
+    if (strpos($ogImage, 'http') !== 0) {
+        $ogImage = 'https://' . $_SERVER['HTTP_HOST'] . '/' . ltrim($ogImage, '/');
+    }
+}
 
 $ogTitle      = htmlspecialchars($c['title'], ENT_QUOTES);
 $ogDesc       = htmlspecialchars(
