@@ -1,40 +1,35 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
-
 header('Content-Type: text/plain');
 
-echo "BASE = " . BASE . "\n";
-echo "DOCUMENT_ROOT = " . $_SERVER['DOCUMENT_ROOT'] . "\n";
-echo "__DIR__ (project root) = " . dirname(__DIR__) . "\n\n";
+echo "BASE = " . BASE . "\n\n";
 
-echo "=== campaigns.image_url ===\n";
-$result = $conn->query("SELECT campaign_id, title, image_url FROM campaigns ORDER BY campaign_id DESC LIMIT 10");
-while ($row = $result->fetch_assoc()) {
-    $url = $row['image_url'];
-    // Check if physical file exists on disk
-    $localPath = $_SERVER['DOCUMENT_ROOT'] . $url;
-    $exists = file_exists($localPath) ? 'FILE EXISTS' : 'FILE MISSING at: ' . $localPath;
-    echo "ID={$row['campaign_id']} | stored_url=[{$url}] | {$exists}\n";
-}
+echo "=== campaigns table — image columns ===\n";
+$result = $conn->query("SELECT campaign_id, title, image_url, multiple_images FROM campaigns ORDER BY campaign_id DESC LIMIT 10");
 
-echo "\n=== campaign_images.image_url ===\n";
-$result2 = $conn->query("SELECT image_id, campaign_id, image_url FROM campaign_images ORDER BY image_id DESC LIMIT 10");
-while ($row = $result2->fetch_assoc()) {
-    $url = $row['image_url'];
-    $localPath = $_SERVER['DOCUMENT_ROOT'] . $url;
-    $exists = file_exists($localPath) ? 'FILE EXISTS' : 'FILE MISSING at: ' . $localPath;
-    echo "img_id={$row['image_id']} camp={$row['campaign_id']} | stored_url=[{$url}] | {$exists}\n";
-}
-
-echo "\n=== Physical files in uploads/campaigns/ ===\n";
-$dir = __DIR__ . '/../uploads/campaigns/';
-if (is_dir($dir)) {
-    $files = scandir($dir);
-    foreach ($files as $f) {
-        if ($f === '.' || $f === '..') continue;
-        echo $f . "\n";
+if (!$result) {
+    // image_url column may not exist — try without it
+    $result = $conn->query("SELECT campaign_id, title, multiple_images FROM campaigns ORDER BY campaign_id DESC LIMIT 10");
+    while ($row = $result->fetch_assoc()) {
+        echo "ID={$row['campaign_id']} | title={$row['title']}\n";
+        echo "  multiple_images=[{$row['multiple_images']}]\n\n";
     }
 } else {
-    echo "Directory not found: " . $dir . "\n";
+    while ($row = $result->fetch_assoc()) {
+        echo "ID={$row['campaign_id']} | title={$row['title']}\n";
+        echo "  image_url=[" . ($row['image_url'] ?? 'NULL') . "]\n";
+        echo "  multiple_images=[{$row['multiple_images']}]\n\n";
+    }
+}
+
+echo "\n=== campaign_images table (first 10) ===\n";
+$r2 = $conn->query("SELECT image_id, campaign_id, image_url FROM campaign_images ORDER BY image_id DESC LIMIT 10");
+if ($r2 && $r2->num_rows > 0) {
+    while ($row = $r2->fetch_assoc()) {
+        echo "img_id={$row['image_id']} camp={$row['campaign_id']} url=[{$row['image_url']}]\n";
+    }
+} else {
+    echo "No rows found (or table doesn't exist)\n";
+    if ($conn->error) echo "Error: " . $conn->error . "\n";
 }
 ?>
