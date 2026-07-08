@@ -56,4 +56,12 @@ $conn = $GLOBALS['conn'];
 function asset($path) {
     return BASE . '/' . ltrim($path, '/');
 }
+
+// Resolve a stored image URL to fully-qualified absolute URL
+// Works whether stored as /uploads/... (relative) or https://... (absolute)
+function imgUrl($url) {
+    if (empty($url)) return '';
+    if (strpos($url, 'http') === 0) return $url;
+    return BASE . '/' . ltrim($url, '/');
+}
 ?>

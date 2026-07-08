@@ -189,7 +189,7 @@ include __DIR__ . '/includes/header.php';
             $daysLeft = (int)$c['days_left'];
             $daysStr  = $daysLeft > 0 ? "$daysLeft days left" : ($daysLeft === 0 ? 'Ends today' : 'Ended');
             $catClass = 'badge-' . strtolower($c['category']);
-            $image    = $c['image_url'] ?: 'https://picsum.photos/seed/' . $c['slug'] . '/600/400';
+            $image    = imgUrl($c['image_url'] ?: '');
           ?>
           <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>" class="card campaign-card" style="text-decoration:none;color:inherit;">
             <img class="card-img" src="<?= htmlspecialchars($image) ?>" alt="<?= htmlspecialchars($c['title']) ?>" loading="lazy" />

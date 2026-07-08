@@ -66,7 +66,7 @@ include __DIR__ . '/includes/header.php';
         $daysLeft= (int)$c['days_left'];
         $daysStr = $daysLeft > 0 ? "$daysLeft days left" : 'Ended';
         $catLower= strtolower($c['category']);
-        $image   = $c['image_url'] ?: '';
+        $image   = imgUrl($c['image_url'] ?: '');
       ?>
       <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
          class="card campaign-card filterable-card"

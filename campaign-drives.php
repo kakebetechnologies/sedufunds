@@ -83,7 +83,7 @@ include __DIR__ . '/includes/header.php';
         $daysStr  = $daysLeft > 0 ? "$daysLeft days left" : ($daysLeft === 0 ? 'Ends today' : 'Ended');
         $catLower = strtolower($c['category']);
         $catClass = 'badge-' . $catLower;
-        $image    = $c['image_url'] ?: '';
+        $image    = imgUrl($c['image_url'] ?: '');
       ?>
       <a href="<?= BASE ?>/campaign-detail.php?id=<?= $c['campaign_id'] ?>"
          class="card campaign-card filterable-card"

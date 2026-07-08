@@ -64,6 +64,27 @@ if (empty($campaignImages) && !empty($c['image_url'])) {
     $campaignImages[] = ['image_id'=>0,'image_url'=>$c['image_url'],'is_cover'=>1,'sort_order'=>0];
 }
 
+// ── Resolve every image URL to a fully-qualified absolute URL ─
+// Stored values can be:  /uploads/campaigns/file.jpg  (relative)
+//                     or https://chamafunds.com/...    (already absolute)
+$protocol_cd = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    $protocol_cd = trim($_SERVER['HTTP_X_FORWARDED_PROTO']);
+}
+function resolveImgUrl($url, $base) {
+    if (empty($url)) return '';
+    if (strpos($url, 'http') === 0) return $url; // already absolute
+    return $base . '/' . ltrim($url, '/');
+}
+foreach ($campaignImages as &$img) {
+    $img['image_url'] = resolveImgUrl($img['image_url'], BASE);
+}
+unset($img);
+// Also resolve the main campaign image_url
+if (!empty($c['image_url']) && strpos($c['image_url'], 'http') !== 0) {
+    $c['image_url'] = BASE . '/' . ltrim($c['image_url'], '/');
+}
+
 // ── Donations ────────────────────────────────────────────────
 $dons = $conn->query(
     "SELECT donor_name, is_anonymous, amount, mobile_money_network, payment_date

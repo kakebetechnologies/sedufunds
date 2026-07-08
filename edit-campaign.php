@@ -271,7 +271,7 @@ if (!isset($permError) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Current image preview -->
             <?php if ($c['image_url']): ?>
             <div style="margin-bottom:12px;position:relative;display:inline-block;">
-              <img src="<?= htmlspecialchars($c['image_url']) ?>"
+              <img src="<?= htmlspecialchars(imgUrl($c['image_url'])) ?>"
                    id="currentImagePreview"
                    style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block;" />
               <span style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;padding:3px 10px;border-radius:99px;">Current image</span>
