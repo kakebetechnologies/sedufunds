@@ -4,24 +4,20 @@
 // ============================================================
 
 function getBaseUrl() {
-    // Detect protocol — check proxy headers too (common on cPanel/shared hosting)
-    $protocol = 'https'; // default to https on live
-    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-        $protocol = trim($_SERVER['HTTP_X_FORWARDED_PROTO']);
-    } elseif (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-        $protocol = 'https';
-    } elseif (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||
-              strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
-        $protocol = 'http'; // only use http on actual localhost
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $isLocal = strpos($host, 'localhost') !== false ||
+               strpos($host, '127.0.0.1') !== false;
+
+    if ($isLocal) {
+        $protocol = 'http'; // local dev always http
+    } else {
+        $protocol = 'https'; // live server always https — never trust $_SERVER['HTTPS'] on shared hosting
     }
 
-    $host = $_SERVER['HTTP_HOST'];
-
     // __DIR__ here is the /includes folder; project root is one level up
-    $docRoot    = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/');
+    $docRoot    = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
     $projectDir = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
 
-    // Get the web path to the project root (e.g. /sedufunds/chama on local, '' on live)
     $path = str_replace($docRoot, '', $projectDir);
     $path = rtrim($path, '/');
 
@@ -57,11 +53,16 @@ function asset($path) {
     return BASE . '/' . ltrim($path, '/');
 }
 
-// Resolve a stored image URL to fully-qualified absolute URL
-// Works whether stored as /uploads/... (relative) or https://... (absolute)
+// Resolve a stored image URL to fully-qualified absolute HTTPS URL
 function imgUrl($url) {
     if (empty($url)) return '';
-    if (strpos($url, 'http') === 0) return $url;
+    // Already absolute
+    if (strpos($url, 'http') === 0) {
+        // Force https on live
+        $isLocal = strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+        return $isLocal ? $url : preg_replace('#^http://#', 'https://', $url);
+    }
+    // Relative path — prepend BASE (which is already https on live)
     return BASE . '/' . ltrim($url, '/');
 }
 ?>
