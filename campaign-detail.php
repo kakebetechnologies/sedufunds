@@ -141,12 +141,11 @@ if (!empty($ogImage)) {
     $ogImage = preg_replace('#^http://#', 'https://', $ogImage);
 }
 
-// Fallback to brand logo
+// Fallback to dynamic branded campaign card
 if (empty($ogImage)) {
-    $ogImage = BASE . '/img/logo.png';
-    if (strpos($ogImage, 'http') !== 0) {
-        $ogImage = 'https://' . $_SERVER['HTTP_HOST'] . '/' . ltrim($ogImage, '/');
-    }
+    $ogTitle_enc = urlencode($c['title']);
+    $ogSub_enc   = urlencode($c['currency'] . ' ' . number_format($c['raised_amount']) . ' raised · ' . $totalDonorsAll . ' supporters');
+    $ogImage     = 'https://' . $_SERVER['HTTP_HOST'] . '/campaign-og.php?title=' . $ogTitle_enc . '&sub=' . $ogSub_enc;
 }
 
 $ogTitle      = htmlspecialchars($c['title'], ENT_QUOTES);
