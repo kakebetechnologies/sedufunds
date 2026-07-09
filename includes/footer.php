@@ -66,7 +66,7 @@
    class="cf-whatsapp-float"
    aria-label="Chat with us on WhatsApp">
   <i class="fab fa-whatsapp"></i>
-  <span class="cf-wa-tooltip">Chat with us</span>
+  <!-- <span class="cf-wa-tooltip">Chat with us</span> -->
 </a>
 
 <style>
