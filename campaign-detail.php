@@ -368,6 +368,19 @@ include __DIR__ . '/includes/header.php';
           </div>
           <?php endif; ?>
 
+          <!-- ── Copy link — above progress bar ────────────── -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;background:#f1f5f9;border-radius:10px;padding:9px 14px;
+                        font-size:.8rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;
+                        white-space:nowrap;"><?= htmlspecialchars($canonicalUrl) ?></div>
+            <button onclick="copyLink(this)"
+                    style="background:#1A2A6C;color:#fff;border:none;border-radius:10px;
+                           padding:9px 16px;font-size:.82rem;font-weight:700;cursor:pointer;
+                           display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;">
+              <i class="fas fa-link"></i> Copy Link
+            </button>
+          </div>
+
           <!-- ── Mini progress bar above story ─────────────── -->
           <div class="cd-mini-progress">
             <div class="cd-mini-prog-row">
@@ -385,7 +398,7 @@ include __DIR__ . '/includes/header.php';
             </div>
           </div>
 
-          <!-- Campaign story — ORDER 1 on mobile, ORDER 2 on desktop (after progress) -->
+          <!-- Campaign story -->
           <div class="cd-section cd-story-section">
             <h2 class="cd-section-h">Campaign Story</h2>
             <div class="cd-story">
@@ -408,7 +421,7 @@ include __DIR__ . '/includes/header.php';
                 return date('M j', strtotime($datetime));
             }
           ?>
-          <!-- ── Recent Supporters Preview ───────────────────── -->
+          <!-- ── Recent Supporters (after story) ─────────────── -->
           <div class="cd-section cd-recent-supporters">
             <div class="cd-section-head">
               <h2 class="cd-section-h">
@@ -425,7 +438,6 @@ include __DIR__ . '/includes/header.php';
               <?php foreach ($recentDonsArr as $rd):
                 $isAnon   = (bool)$rd['is_anonymous'];
                 $name     = $isAnon ? 'Anonymous' : htmlspecialchars($rd['donor_name']);
-                // Build 1–2 letter initials
                 if ($isAnon) {
                     $initials = '?';
                 } else {
@@ -433,7 +445,6 @@ include __DIR__ . '/includes/header.php';
                     $initials = strtoupper(substr($parts[0], 0, 1));
                     if (isset($parts[1])) $initials .= strtoupper(substr($parts[1], 0, 1));
                 }
-                // Pick a deterministic colour from name
                 $colours  = ['#FF6B4A','#1A2A6C','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
                 $colIdx   = $isAnon ? 0 : (ord($initials[0]) % count($colours));
                 $bgColour = $colours[$colIdx];
@@ -461,7 +472,7 @@ include __DIR__ . '/includes/header.php';
           </div>
           <?php endif; ?>
 
-          <!-- Progress block — ORDER 2 on mobile, ORDER 1 on desktop -->
+          <!-- Progress block (sidebar on desktop, inline on mobile) -->
           <div class="cd-progress-card cd-stats-section">
             <div class="cd-prog-numbers">
               <div>
@@ -493,28 +504,6 @@ include __DIR__ . '/includes/header.php';
                 <span class="cd-prog-stat-val" id="shareCountCard"><?= number_format($c['share_count']) ?></span>
                 <span class="cd-prog-stat-lbl">Shares</span>
               </div>
-            </div>
-          </div>
-
-          <!-- Share -->
-          <div class="cd-share-block">
-            <p class="cd-share-lbl"><i class="fas fa-bullhorn"></i> Share this campaign</p>
-            <div class="cd-share-row">
-              <a href="https://wa.me/?text=<?= $shareTextEnc ?>"
-                 target="_blank" class="cd-share-wa" onclick="trackShare()">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-              </a>
-              <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode($canonicalUrl) ?>"
-                 target="_blank" class="cd-share-fb" onclick="trackShare()">
-                <i class="fab fa-facebook"></i> Facebook
-              </a>
-              <a href="https://twitter.com/intent/tweet?text=<?= $shareTextEnc ?>"
-                 target="_blank" class="cd-share-tw" onclick="trackShare()">
-                <i class="fab fa-twitter"></i> Twitter
-              </a>
-              <button class="cd-share-copy" onclick="copyLink(this)">
-                <i class="fas fa-link"></i> Copy Link
-              </button>
             </div>
           </div>
 
