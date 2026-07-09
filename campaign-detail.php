@@ -104,6 +104,47 @@ $recentDons = $conn->query(
 $recentDonsArr = [];
 while ($rd = $recentDons->fetch_assoc()) $recentDonsArr[] = $rd;
 
+// ── Similar campaigns (same category, exclude current) ───────
+$catEscSim = $conn->real_escape_string($c['category']);
+$simResult = $conn->query(
+    "SELECT c.campaign_id, c.title, c.category, c.currency, c.raised_amount,
+            c.goal_amount, c.image_url, c.contributor_count,
+            ROUND((c.raised_amount / c.goal_amount) * 100, 1) AS pct,
+            DATEDIFF(c.end_date, NOW()) AS days_left
+     FROM campaigns c
+     WHERE c.category = '$catEscSim'
+       AND c.campaign_id != $cid
+       AND c.status = 'active'
+     ORDER BY c.raised_amount DESC
+     LIMIT 4"
+);
+$similarCampaigns = [];
+while ($sc = $simResult->fetch_assoc()) {
+    $sc['image_url'] = resolveImgUrl($sc['image_url'], BASE);
+    $similarCampaigns[] = $sc;
+}
+// If not enough same-category, fill with other active campaigns
+if (count($similarCampaigns) < 4) {
+    $existing = array_merge([$cid], array_column($similarCampaigns, 'campaign_id'));
+    $excl = implode(',', $existing);
+    $need = 4 - count($similarCampaigns);
+    $fillResult = $conn->query(
+        "SELECT c.campaign_id, c.title, c.category, c.currency, c.raised_amount,
+                c.goal_amount, c.image_url, c.contributor_count,
+                ROUND((c.raised_amount / c.goal_amount) * 100, 1) AS pct,
+                DATEDIFF(c.end_date, NOW()) AS days_left
+         FROM campaigns c
+         WHERE c.campaign_id NOT IN ($excl)
+           AND c.status = 'active'
+         ORDER BY c.created_at DESC
+         LIMIT $need"
+    );
+    while ($sc = $fillResult->fetch_assoc()) {
+        $sc['image_url'] = resolveImgUrl($sc['image_url'], BASE);
+        $similarCampaigns[] = $sc;
+    }
+}
+
 $pct       = min(100, (float)$c['pct']);
 $daysLeft  = (int)$c['days_left'];
 $daysStr   = $daysLeft > 0 ? "$daysLeft days left" : ($daysLeft === 0 ? 'Ends today' : 'Campaign ended');
@@ -786,6 +827,47 @@ include __DIR__ . '/includes/header.php';
     </div>
   </div>
 </div>
+
+<?php if (!empty($similarCampaigns)): ?>
+<!-- ── Similar Campaigns ──────────────────────────────────── -->
+<section class="cd-similar-section">
+  <div class="container">
+    <div class="cd-similar-header">
+      <h2 class="cd-similar-title">
+        <i class="fas fa-th-large"></i> Similar Campaigns
+      </h2>
+      <a href="<?= BASE ?>/campaign-drives.php?category=<?= urlencode($c['category']) ?>" class="cd-similar-more">
+        See all <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="cd-similar-grid">
+      <?php foreach ($similarCampaigns as $sc):
+        $sPct      = min(100, (float)$sc['pct']);
+        $sDaysLeft = (int)$sc['days_left'];
+        $sDaysStr  = $sDaysLeft > 0 ? "$sDaysLeft days left" : ($sDaysLeft === 0 ? 'Ends today' : 'Ended');
+        $sImg      = !empty($sc['image_url']) ? htmlspecialchars($sc['image_url']) : 'https://picsum.photos/seed/' . $sc['campaign_id'] . '/400/220';
+      ?>
+      <a href="<?= BASE ?>/campaign-detail.php?id=<?= $sc['campaign_id'] ?>" class="cd-sim-card">
+        <div class="cd-sim-img">
+          <img src="<?= $sImg ?>" alt="<?= htmlspecialchars($sc['title']) ?>" loading="lazy" />
+          <span class="cd-sim-cat"><?= htmlspecialchars($sc['category']) ?></span>
+        </div>
+        <div class="cd-sim-body">
+          <p class="cd-sim-title"><?= htmlspecialchars($sc['title']) ?></p>
+          <div class="cd-sim-prog-track">
+            <div class="cd-sim-prog-fill" style="width:<?= $sPct ?>%;"></div>
+          </div>
+          <div class="cd-sim-meta">
+            <span class="cd-sim-raised"><?= $sc['currency'] ?> <?= number_format($sc['raised_amount']) ?></span>
+            <span class="cd-sim-days <?= $sDaysLeft >= 0 && $sDaysLeft <= 5 ? 'cd-sim-urgent' : '' ?>"><?= $sDaysStr ?></span>
+          </div>
+        </div>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 
