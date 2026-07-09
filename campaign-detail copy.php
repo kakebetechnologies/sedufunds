@@ -33,19 +33,19 @@ $c   = $result->fetch_assoc();
 $cid = $c['campaign_id'];
 $conn->query("UPDATE campaigns SET view_count = view_count + 1 WHERE campaign_id = $cid");
 
-// ── Category hero images — African context ──────────────────
+// ── Category hero images — African people, African context ──
 $categoryHeros = [
-    'Medical'    => 'https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=1600&q=80',
-    'Education'  => 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&q=80',
+    'Medical'    => 'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=1600&q=80',
+    'Education'  => 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&q=80',
     'Community'  => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80',
-    'Family'     => 'https://images.unsplash.com/photo-1536337005406-e65b5ec4ec76?w=1600&q=80',
-    'Business'   => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1600&q=80',
+    'Family'     => 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=1600&q=80',
+    'Business'   => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1600&q=80',
     'Emergency'  => 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1600&q=80',
-    'Marriage'   => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80',
+    'Marriage'   => 'https://images.unsplash.com/photo-1607462109225-6b64ae2dd3cb?w=1600&q=80',
     'Funeral'    => 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=1600&q=80',
     'Agriculture'=> 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80',
     'Religion'   => 'https://images.unsplash.com/photo-1438232992991-995b671e4b8a?w=1600&q=80',
-    'Sports'     => 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80',
+    'Sports'     => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1600&q=80',
     'Other'      => 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=1600&q=80',
 ];
 $heroImg = $categoryHeros[$c['category']] ?? $categoryHeros['Other'];

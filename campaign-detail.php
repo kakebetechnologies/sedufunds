@@ -36,20 +36,32 @@ $c   = $result->fetch_assoc();
 $cid = $c['campaign_id'];
 $conn->query("UPDATE campaigns SET view_count = view_count + 1 WHERE campaign_id = $cid");
 
-// ── Category hero images — African context ──────────────────
+// ── Category hero images — African people, African context ──
 $categoryHeros = [
-    'Medical'    => 'https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=1600&q=80', // African nurse/hospital
-    'Education'  => 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&q=80', // African children in school
-    'Community'  => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80', // African community gathering
-    'Family'     => 'https://images.unsplash.com/photo-1536337005406-e65b5ec4ec76?w=1600&q=80', // African family
-    'Business'   => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1600&q=80',   // African business meeting
-    'Emergency'  => 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1600&q=80', // Humanitarian aid Africa
-    'Marriage'   => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80', // African wedding
-    'Funeral'    => 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=1600&q=80', // dignified ceremony
-    'Agriculture'=> 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80', // African farmer
-    'Religion'   => 'https://images.unsplash.com/photo-1438232992991-995b671e4b8a?w=1600&q=80', // African church/worship
-    'Sports'     => 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80', // African athletes
-    'Other'      => 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=1600&q=80', // African hands together
+    // African nurse with patient in clinic
+    'Medical'    => 'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=1600&q=80',
+    // African children studying in classroom
+    'Education'  => 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&q=80',
+    // African community gathered together
+    'Community'  => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80',
+    // African mother and children
+    'Family'     => 'https://images.unsplash.com/photo-1602928321679-560bb453f190?w=1600&q=80',
+    // African entrepreneurs in meeting
+    'Business'   => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1600&q=80',
+    // Humanitarian aid / relief Africa
+    'Emergency'  => 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1600&q=80',
+    // African wedding celebration
+    'Marriage'   => 'https://images.unsplash.com/photo-1607462109225-6b64ae2dd3cb?w=1600&q=80',
+    // Candles / memorial — dignified
+    'Funeral'    => 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=1600&q=80',
+    // African farmer in field
+    'Agriculture'=> 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80',
+    // African church / praise worship
+    'Religion'   => 'https://images.unsplash.com/photo-1438232992991-995b671e4b8a?w=1600&q=80',
+    // African athletes running
+    'Sports'     => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1600&q=80',
+    // African hands joined together
+    'Other'      => 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=1600&q=80',
 ];
 $heroImg = $categoryHeros[$c['category']] ?? $categoryHeros['Other'];
 
@@ -368,21 +380,19 @@ include __DIR__ . '/includes/header.php';
           </div>
           <?php endif; ?>
 
-          <!-- ── Copy link — above progress bar ────────────── -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-            <div style="flex:1;background:#f1f5f9;border-radius:10px;padding:9px 14px;
-                        font-size:.8rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;
-                        white-space:nowrap;"><?= htmlspecialchars($canonicalUrl) ?></div>
+          <!-- ── Copy Link button (below image) ──────────────── -->
+          <div class="cd-order-1" style="margin-bottom:14px;">
             <button onclick="copyLink(this)"
-                    style="background:#1A2A6C;color:#fff;border:none;border-radius:10px;
-                           padding:9px 16px;font-size:.82rem;font-weight:700;cursor:pointer;
-                           display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;">
-              <i class="fas fa-link"></i> Copy Link
+                    style="width:100%;background:#1A2A6C;color:#fff;border:none;border-radius:12px;
+                           padding:11px 20px;font-size:.88rem;font-weight:700;cursor:pointer;
+                           display:flex;align-items:center;justify-content:center;gap:8px;
+                           transition:background .2s;">
+              <i class="fas fa-link"></i> Copy Campaign Link
             </button>
           </div>
 
-          <!-- ── Mini progress bar above story ─────────────── -->
-          <div class="cd-mini-progress">
+          <!-- ── Mini progress bar ─────────────────────────── -->
+          <div class="cd-mini-progress cd-order-2">
             <div class="cd-mini-prog-row">
               <span class="cd-mini-prog-raised"><?= $c['currency'] ?> <?= number_format($c['raised_amount']) ?> raised</span>
               <span class="cd-mini-prog-pct"><?= $pct ?>% of <?= $c['currency'] ?> <?= number_format($c['goal_amount']) ?></span>
@@ -399,7 +409,7 @@ include __DIR__ . '/includes/header.php';
           </div>
 
           <!-- Campaign story -->
-          <div class="cd-section cd-story-section">
+          <div class="cd-section cd-story-section cd-order-3">
             <h2 class="cd-section-h">Campaign Story</h2>
             <div class="cd-story">
               <?= nl2br(htmlspecialchars($c['description'])) ?>
@@ -422,7 +432,7 @@ include __DIR__ . '/includes/header.php';
             }
           ?>
           <!-- ── Recent Supporters (after story) ─────────────── -->
-          <div class="cd-section cd-recent-supporters">
+          <div class="cd-section cd-recent-supporters cd-order-4">
             <div class="cd-section-head">
               <h2 class="cd-section-h">
                 <i class="fas fa-heart" style="color:#FF6B4A;margin-right:8px;font-size:.9em;"></i>
