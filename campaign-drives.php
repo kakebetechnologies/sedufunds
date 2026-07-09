@@ -40,15 +40,21 @@ include __DIR__ . '/includes/header.php';
   </div>
 </div>
 
-<!-- FILTERS -->
-<div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 0;position:sticky;top:64px;z-index:100;">
+<!-- STICKY SEARCH -->
+<div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 0;position:sticky;top:64px;z-index:100;">
   <div class="container">
-    <div class="filter-bar">
-      <div class="search-input-wrap">
-        <i class="fas fa-search"></i>
-        <input type="text" id="campaignSearch" class="form-input" placeholder="Search campaigns…" />
-      </div>
-      <select id="categoryFilter" class="form-input" style="max-width:160px;">
+    <div class="search-input-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" id="campaignSearch" class="form-input" placeholder="Search campaigns…" />
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS (not sticky) -->
+<div style="background:#f9fafb;border-bottom:1px solid #e5e7eb;padding:10px 0;">
+  <div class="container">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <select id="categoryFilter" class="form-input" style="max-width:140px;font-size:.82rem;padding:7px 10px;">
         <option value="">All Categories</option>
         <option value="family">Family</option>
         <option value="medical">Medical</option>
@@ -57,7 +63,7 @@ include __DIR__ . '/includes/header.php';
         <option value="business">Business</option>
         <option value="emergency">Emergency</option>
       </select>
-      <select id="countryFilter" class="form-input" style="max-width:150px;">
+      <select id="countryFilter" class="form-input" style="max-width:130px;font-size:.82rem;padding:7px 10px;">
         <option value="">All Countries</option>
         <option value="uganda">Uganda</option>
         <option value="kenya">Kenya</option>
@@ -65,7 +71,7 @@ include __DIR__ . '/includes/header.php';
         <option value="nigeria">Nigeria</option>
         <option value="zambia">Zambia</option>
       </select>
-      <select id="sortFilter" class="form-input" style="max-width:160px;">
+      <select id="sortFilter" class="form-input" style="max-width:140px;font-size:.82rem;padding:7px 10px;">
         <option value="most-recent">Most Recent</option>
         <option value="most-funded">Most Funded</option>
         <option value="ending-soon">Ending Soon</option>

@@ -200,6 +200,20 @@ $pageDescription = 'Launch your crowdfunding campaign in Uganda. Free to create,
       <span><strong>Free to start.</strong> A 7.5% platform fee is deducted only when you withdraw — never upfront.</span>
     </div>
 
+    <!-- Guide banner -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 18px;
+                display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+      <i class="fas fa-file-pdf" style="color:#FF6B4A;font-size:1.2rem;flex-shrink:0;"></i>
+      <span style="flex:1;font-size:.84rem;color:#6b7280;min-width:160px;">
+        Before you start, read the <strong style="color:#1A2A6C;">Campaigner Guide</strong> to understand how campaigns, verification and payouts work.
+      </span>
+      <a href="<?= BASE ?>/admin/CampaignerDetails.pdf" target="_blank"
+         style="background:#1A2A6C;color:#fff;padding:8px 16px;border-radius:99px;
+                font-size:.8rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+        <i class="fas fa-download" style="margin-right:5px;"></i>Read Guide
+      </a>
+    </div>
+
     <!-- Main card -->
     <div class="cc-card">
       <div class="cc-card-header">
