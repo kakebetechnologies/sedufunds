@@ -36,20 +36,20 @@ $c   = $result->fetch_assoc();
 $cid = $c['campaign_id'];
 $conn->query("UPDATE campaigns SET view_count = view_count + 1 WHERE campaign_id = $cid");
 
-// ── Category hero images (Unsplash — fixed per category) ────
+// ── Category hero images — African context ──────────────────
 $categoryHeros = [
-    'Medical'    => 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1600&q=80',
-    'Education'  => 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&q=80',
-    'Community'  => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80',
-    'Family'     => 'https://images.unsplash.com/photo-1511895426328-dc8714191011?w=1600&q=80',
-    'Business'   => 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1600&q=80',
-    'Emergency'  => 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=1600&q=80',
-    'Marriage'   => 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',
-    'Funeral'    => 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=1600&q=80',
-    'Agriculture'=> 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80',
-    'Religion'   => 'https://images.unsplash.com/photo-1438232992991-995b671e4b8a?w=1600&q=80',
-    'Sports'     => 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80',
-    'Other'      => 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=1600&q=80',
+    'Medical'    => 'https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=1600&q=80', // African nurse/hospital
+    'Education'  => 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&q=80', // African children in school
+    'Community'  => 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80', // African community gathering
+    'Family'     => 'https://images.unsplash.com/photo-1536337005406-e65b5ec4ec76?w=1600&q=80', // African family
+    'Business'   => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1600&q=80',   // African business meeting
+    'Emergency'  => 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1600&q=80', // Humanitarian aid Africa
+    'Marriage'   => 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=80', // African wedding
+    'Funeral'    => 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=1600&q=80', // dignified ceremony
+    'Agriculture'=> 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1600&q=80', // African farmer
+    'Religion'   => 'https://images.unsplash.com/photo-1438232992991-995b671e4b8a?w=1600&q=80', // African church/worship
+    'Sports'     => 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1600&q=80', // African athletes
+    'Other'      => 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=1600&q=80', // African hands together
 ];
 $heroImg = $categoryHeros[$c['category']] ?? $categoryHeros['Other'];
 
