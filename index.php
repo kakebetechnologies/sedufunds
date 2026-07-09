@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/includes/config.php';
 
 $pageTitle       = 'ChamaFunds – Pool Money Together for What Matters';
-$pageDescription = 'Uganda\'s mobile money crowdfunding platform. Launch a campaign in 60 seconds, receive funds via MTN & Airtel Money. Free to start — same-day payout.';
+$pageDescription = 'Uganda\'s mobile money crowdfunding platform. Launch a campaign in 60 seconds, receive funds via MTN & Airtel Money. Free to start — fast payout.';
 
 // ── OG / Social meta ─────────────────────────────────────────
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -85,7 +85,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="hero-trust-row">
           <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Free to start</span>
-          <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Same-day payout</span>
+          <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Payout within 48hrs</span>
           <span><i class="fas fa-check-circle" style="color:#6ee7b7;margin-right:6px;"></i>Live tracking</span>
         </div>
       </div>
@@ -166,8 +166,8 @@ include __DIR__ . '/includes/header.php';
       <div class="card step-card">
         <div class="step-icon-wrap">3</div>
         <h3 style="font-weight:800;color:#1A2A6C;font-size:1.1rem;margin-bottom:10px;">Grow &amp; Receive Funds</h3>
-        <p style="color:#6b7280;font-size:.9rem;line-height:1.7;">Watch contributions come in live and withdraw funds to mobile money — same day.</p>
-        <p style="margin-top:12px;font-size:.78rem;font-weight:700;color:#10b981;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Same-day payout</p>
+        <p style="color:#6b7280;font-size:.9rem;line-height:1.7;">Watch contributions come in live and withdraw funds to mobile money — processed within 48 hours.</p>
+        <p style="margin-top:12px;font-size:.78rem;font-weight:700;color:#10b981;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Payout within 48hrs</p>
       </div>
     </div>
   </div>
@@ -246,7 +246,7 @@ include __DIR__ . '/includes/header.php';
       </div>
       <div class="faq-item">
         <button class="faq-question">How long does it take to receive funds? <span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner">Withdrawals are processed same-day during business hours (8am–6pm local time). Funds land on your mobile money within minutes of approval.</div></div>
+        <div class="faq-answer"><div class="faq-answer-inner">Withdrawals are reviewed and processed within 48 hours during business hours (8am–6pm local time). Funds are sent directly to your mobile money account after approval.</div></div>
       </div>
     </div>
   </div>

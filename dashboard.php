@@ -126,6 +126,25 @@ $availableBalance = $totalRaised - $withdrawnTotal;
           <h1>Welcome back, <?= htmlspecialchars(explode(' ', $user['full_name'])[0]) ?>! 👋</h1>
           <p>Here's what's happening with your campaigns.</p>
         </div>
+
+    <!-- Campaigner Guide banner -->
+    <div style="background:linear-gradient(135deg,rgba(255,107,74,.1),rgba(26,42,108,.07));
+                border:1px solid rgba(255,107,74,.25);border-radius:14px;padding:14px 18px;
+                display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="width:40px;height:40px;background:#FF6B4A;border-radius:10px;display:flex;
+                  align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-file-pdf" style="color:#fff;font-size:1rem;"></i>
+      </div>
+      <div style="flex:1;min-width:180px;">
+        <p style="font-weight:700;color:#1A2A6C;font-size:.9rem;margin-bottom:2px;">Campaigner Guide Available</p>
+        <p style="font-size:.78rem;color:#6b7280;">Read our guide to understand how campaigns, payouts, and verification work.</p>
+      </div>
+      <a href="<?= BASE ?>/admin/CampaignerDetails.pdf" target="_blank"
+         style="background:#FF6B4A;color:#fff;padding:9px 18px;border-radius:99px;
+                font-size:.82rem;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+        <i class="fas fa-download" style="margin-right:6px;"></i>Read Guide
+      </a>
+    </div>
         <div style="display:flex;gap:10px;align-items:center;">
           <?php if ($unreadCount > 0): ?>
           <span style="background:#FF6B4A;color:#fff;font-size:.72rem;font-weight:700;padding:4px 8px;border-radius:99px;">
