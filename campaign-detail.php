@@ -383,10 +383,10 @@ include __DIR__ . '/includes/header.php';
           <!-- ── Copy Link button (below image) ──────────────── -->
           <div class="cd-order-1" style="margin-bottom:14px;">
             <button onclick="copyLink(this)"
+                    class="cd-copy-btn"
                     style="width:100%;background:#1A2A6C;color:#fff;border:none;border-radius:12px;
                            padding:11px 20px;font-size:.88rem;font-weight:700;cursor:pointer;
-                           display:flex;align-items:center;justify-content:center;gap:8px;
-                           transition:background .2s;">
+                           display:flex;align-items:center;justify-content:center;gap:8px;">
               <i class="fas fa-link"></i> Copy Campaign Link
             </button>
           </div>
@@ -1018,6 +1018,23 @@ include __DIR__ . '/includes/header.php';
 .cd-panel { display:none; }
 .cd-panel.active { display:flex; flex-direction:column; }
 
+/* ── Mobile section order ──────────────────────────────────── */
+/* Desktop: natural DOM order */
+.cd-order-1 { order: 1; }
+.cd-order-2 { order: 2; }
+.cd-order-3 { order: 3; }
+.cd-order-4 { order: 4; }
+/* Mobile: image → copy button → stats → story → supporters */
+@media (max-width: 1023px) {
+  .cd-panel.active { display: flex; flex-direction: column; }
+  .cd-photos-section  { order: 0; }
+  .cd-order-1         { order: 1; } /* copy link button */
+  .cd-order-2         { order: 2; } /* mini progress / raised stats */
+  .cd-order-3         { order: 3; } /* story */
+  .cd-order-4         { order: 4; } /* recent supporters */
+  .cd-stats-section   { order: 5; } /* full progress card */
+}
+
 /* ── Campaign photos ───────────────────────────────────────── */
 .cd-photos-section {
   background:#fff; border-radius:16px;
@@ -1174,6 +1191,10 @@ include __DIR__ . '/includes/header.php';
   .cd-similar-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .cd-sim-body { padding: 10px; }
 }
+/* ── Copy link button ──────────────────────────────────────── */
+.cd-copy-btn { transition: background .2s !important; }
+.cd-copy-btn:hover { background: #2a3f8a !important; }
+
 .cd-mini-progress {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
