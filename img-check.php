@@ -18,7 +18,7 @@ if (is_dir($dir)) {
 }
 
 echo "\n=== DB IMAGE URLs ===\n";
-$result = $conn->query("SELECT campaign_id, title, image_url FROM campaigns WHERE image_url IS NOT NULL AND image_url != '' ORDER BY campaign_id");
+$result = $conn->query("SELECT campaign_id, title, status, image_url FROM campaigns WHERE image_url IS NOT NULL AND image_url != '' ORDER BY campaign_id");
 while ($r = $result->fetch_assoc()) {
     $url = $r['image_url'];
     $resolved = imgUrl($url);
@@ -26,7 +26,7 @@ while ($r = $result->fetch_assoc()) {
     $path = parse_url($resolved, PHP_URL_PATH);
     $disk = $_SERVER['DOCUMENT_ROOT'] . $path;
     $exists = file_exists($disk) ? '✅' : '❌ MISSING';
-    echo "camp#{$r['campaign_id']}: stored=[$url]\n";
+    echo "camp#{$r['campaign_id']} [{$r['status']}]: stored=[$url]\n";
     echo "         resolved=[$resolved]\n";
     echo "         disk=$exists\n\n";
 }

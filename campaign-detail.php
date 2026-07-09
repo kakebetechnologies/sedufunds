@@ -327,6 +327,23 @@ include __DIR__ . '/includes/header.php';
           </div>
           <?php endif; ?>
 
+          <!-- ── Mini progress bar above story ─────────────── -->
+          <div class="cd-mini-progress">
+            <div class="cd-mini-prog-row">
+              <span class="cd-mini-prog-raised"><?= $c['currency'] ?> <?= number_format($c['raised_amount']) ?> raised</span>
+              <span class="cd-mini-prog-pct"><?= $pct ?>% of <?= $c['currency'] ?> <?= number_format($c['goal_amount']) ?></span>
+            </div>
+            <div class="cd-mini-prog-track">
+              <div class="cd-mini-prog-fill" style="width:<?= $pct ?>%;"></div>
+            </div>
+            <div class="cd-mini-prog-stats">
+              <span><i class="fas fa-users"></i> <?= number_format($totalDonorsAll) ?> supporter<?= $totalDonorsAll !== 1 ? 's' : '' ?></span>
+              <span><i class="fas fa-eye"></i> <?= number_format($c['view_count']) ?> views</span>
+              <span><i class="fas fa-share-alt"></i> <?= number_format($c['share_count']) ?> shares</span>
+              <span class="<?= $daysUrgent ? 'cd-urgent-txt' : '' ?>"><i class="fas fa-clock"></i> <?= htmlspecialchars($daysStr) ?></span>
+            </div>
+          </div>
+
           <!-- Campaign story — ORDER 1 on mobile, ORDER 2 on desktop (after progress) -->
           <div class="cd-section cd-story-section">
             <h2 class="cd-section-h">Campaign Story</h2>
@@ -420,8 +437,8 @@ include __DIR__ . '/includes/header.php';
             </div>
             <div class="cd-prog-stats">
               <div class="cd-prog-stat">
-                <span class="cd-prog-stat-val"><?= number_format($c['contributor_count']) ?></span>
-                <span class="cd-prog-stat-lbl">Contributors</span>
+                <span class="cd-prog-stat-val"><?= number_format($totalDonorsAll) ?></span>
+                <span class="cd-prog-stat-lbl">Supporters</span>
               </div>
               <div class="cd-prog-stat">
                 <span class="cd-prog-stat-val"><?= $c['currency'] ?> <?= number_format($remaining) ?></span>
@@ -467,7 +484,7 @@ include __DIR__ . '/includes/header.php';
           <div class="cd-section">
             <div class="cd-section-head">
               <h2 class="cd-section-h">
-                <?= number_format($totalDonorsAll) ?> Contributions
+                <?= number_format($totalDonorsAll) ?> <?= $totalDonorsAll === 1 ? 'Supporter' : 'Supporters' ?>
               </h2>
               <span class="cd-live-dot"><span></span>Live</span>
             </div>
@@ -475,59 +492,40 @@ include __DIR__ . '/includes/header.php';
             <?php if ($dons && $dons->num_rows > 0):
               $donations_arr = [];
               while ($d = $dons->fetch_assoc()) $donations_arr[] = $d;
-              // Sort amounts for star rating (highest gets 5 stars)
-              $amounts = array_column($donations_arr, 'amount');
-              $maxAmt  = max($amounts) ?: 1;
             ?>
             <div class="cd-don-list">
               <?php foreach ($donations_arr as $d):
-                // Star rating based on relative amount (1–5 stars)
-                $ratio = $d['amount'] / $maxAmt;
-                $stars = $ratio >= 0.8 ? 5 : ($ratio >= 0.6 ? 4 : ($ratio >= 0.4 ? 3 : ($ratio >= 0.2 ? 2 : 1)));
-              ?>
-              <div class="cd-don-row">
-                <div class="cd-don-ava">
-                  <?php if ($d['is_anonymous']): ?>
-                    <i class="fas fa-user-secret"></i>
-                  <?php else:
-                    $dParts = explode(' ', trim($d['donor_name']));
-                    $dInit  = strtoupper(substr($dParts[0], 0, 1));
-                    if (isset($dParts[1])) $dInit .= strtoupper(substr($dParts[1], 0, 1));
+                $isAnon   = (bool)$d['is_anonymous'];
+                $donName  = $isAnon ? 'Anonymous' : htmlspecialchars($d['donor_name']);
+                // Build initials
+                if ($isAnon) {
+                    $dInit = '?'; $dBg = '#9ca3af';
+                } else {
+                    $parts = explode(' ', trim($d['donor_name']));
+                    $dInit = strtoupper(substr($parts[0], 0, 1));
+                    if (isset($parts[1])) $dInit .= strtoupper(substr($parts[1], 0, 1));
                     $dColours = ['#FF6B4A','#1A2A6C','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899'];
                     $dBg = $dColours[ord($dInit[0]) % count($dColours)];
-                  ?>
-                    <span style="background:<?= $dBg ?>;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#fff;">
-                      <?= htmlspecialchars($dInit) ?>
-                    </span>
-                  <?php endif; ?>
+                }
+              ?>
+              <div class="cd-don-row">
+                <div class="cd-don-ava" style="background:<?= $dBg ?>;">
+                  <?= $isAnon ? '<i class="fas fa-user-secret"></i>' : htmlspecialchars($dInit) ?>
                 </div>
                 <div class="cd-don-body">
                   <div class="cd-don-top">
-                    <span class="cd-don-name">
-                      <?= $d['is_anonymous'] ? 'Anonymous' : htmlspecialchars($d['donor_name']) ?>
-                    </span>
-                    <span class="cd-don-amt">
-                      +<?= $c['currency'] ?> <?= number_format($d['amount']) ?>
-                    </span>
+                    <span class="cd-don-name"><?= $donName ?></span>
+                    <span class="cd-don-amt">+<?= $c['currency'] ?> <?= number_format($d['amount']) ?></span>
                   </div>
-                  <div class="cd-don-bottom">
-                    <span class="cd-don-stars">
-                      <?php for ($s=1; $s<=5; $s++): ?>
-                        <i class="fas fa-star <?= $s<=$stars?'cd-star-on':'cd-star-off' ?>"></i>
-                      <?php endfor; ?>
-                    </span>
-                    <span class="cd-don-meta">
-                      <i class="fas fa-mobile-alt"></i>
-                      <?= htmlspecialchars($d['mobile_money_network']) ?>
-                      &nbsp;·&nbsp; <?= timeAgo($d['payment_date']) ?>
-                    </span>
+                  <div class="cd-don-meta-row">
+                    <?= timeAgo($d['payment_date']) ?>
                   </div>
                 </div>
               </div>
               <?php endforeach; ?>
             </div>
             <?php if ($totalDonorsAll > 20): ?>
-            <p class="cd-more-note">+<?= number_format($totalDonorsAll-20) ?> more generous contributors</p>
+            <p class="cd-more-note">+<?= number_format($totalDonorsAll - 20) ?> more generous supporters</p>
             <?php endif; ?>
 
             <?php else: ?>
@@ -1019,6 +1017,42 @@ include __DIR__ . '/includes/header.php';
   background:#ef4444; animation:cd-pulse 1s infinite;
 }
 
+/* ── Mini progress bar above story ───────────────────────── */
+.cd-mini-progress {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+.cd-mini-prog-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.cd-mini-prog-raised {
+  font-weight: 800; color: #1A2A6C; font-size: 1rem;
+}
+.cd-mini-prog-pct {
+  font-size: .78rem; color: #6b7280; font-weight: 600;
+}
+.cd-mini-prog-track {
+  height: 8px; background: #e2e8f0; border-radius: 99px;
+  overflow: hidden; margin-bottom: 12px;
+}
+.cd-mini-prog-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #FF6B4A, #f59e0b);
+  transition: width .6s ease;
+  min-width: 2px;
+}
+.cd-mini-prog-stats {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: .78rem; color: #6b7280; font-weight: 600;
+}
+.cd-mini-prog-stats i { margin-right: 4px; color: #9ca3af; }
+.cd-urgent-txt { color: #ef4444 !important; }
+.cd-urgent-txt i { color: #ef4444 !important; }
+
 /* Story */
 .cd-story { font-size:.92rem; color:#334155; line-height:2; margin-bottom:16px; }
 .cd-verified {
@@ -1129,9 +1163,15 @@ include __DIR__ . '/includes/header.php';
 }
 .cd-don-row:hover { background:#f8fafc; }
 .cd-don-ava {
-  width:38px; height:38px; border-radius:50%; flex-shrink:0;
-  background:#0f172a;
+  width:40px; height:40px; border-radius:50%; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:.82rem; color:#fff; letter-spacing:.02em;
+}
+.cd-don-name { font-weight:700; color:#0f172a; font-size:.88rem; }
+.cd-don-amt  { font-weight:800; color:#10b981; font-size:.88rem; white-space:nowrap; }
+.cd-don-meta-row { font-size:.74rem; color:#94a3b8; margin-top:2px; }
+.cd-more-note { text-align:center; font-size:.76rem; color:#94a3b8; padding:12px 0; }
+.cd-empty { text-align:center; padding:32px 0; color:#94a3b8; }  display:flex; align-items:center; justify-content:center;
   font-weight:700; font-size:.85rem; color:#fff;
 }
 .cd-don-body { flex:1; min-width:0; }
