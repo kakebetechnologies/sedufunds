@@ -292,7 +292,7 @@ include __DIR__ . '/includes/header.php';
           <i class="fas fa-eye"></i><?= number_format($c['view_count']) ?> views
         </span>
         <span class="cd-meta-item">
-          <i class="fas fa-share-alt"></i><?= number_format($c['share_count']) ?> shares
+          <i class="fas fa-share-alt"></i> <span id="shareCountHero"><?= number_format($c['share_count']) ?></span> shares
         </span>
         <span class="cd-meta-item <?= $daysUrgent ? 'cd-urgent' : '' ?>">
           <i class="fas fa-clock"></i><?= htmlspecialchars($daysStr) ?>
@@ -380,7 +380,7 @@ include __DIR__ . '/includes/header.php';
             <div class="cd-mini-prog-stats">
               <span><i class="fas fa-users"></i> <?= number_format($totalDonorsAll) ?> supporter<?= $totalDonorsAll !== 1 ? 's' : '' ?></span>
               <span><i class="fas fa-eye"></i> <?= number_format($c['view_count']) ?> views</span>
-              <span><i class="fas fa-share-alt"></i> <?= number_format($c['share_count']) ?> shares</span>
+              <span><i class="fas fa-share-alt"></i> <span id="shareCountMini"><?= number_format($c['share_count']) ?></span> shares</span>
               <span class="<?= $daysUrgent ? 'cd-urgent-txt' : '' ?>"><i class="fas fa-clock"></i> <?= htmlspecialchars($daysStr) ?></span>
             </div>
           </div>
@@ -490,7 +490,7 @@ include __DIR__ . '/includes/header.php';
                 <span class="cd-prog-stat-lbl">Views</span>
               </div>
               <div class="cd-prog-stat">
-                <span class="cd-prog-stat-val"><?= number_format($c['share_count']) ?></span>
+                <span class="cd-prog-stat-val" id="shareCountCard"><?= number_format($c['share_count']) ?></span>
                 <span class="cd-prog-stat-lbl">Shares</span>
               </div>
             </div>
@@ -1708,12 +1708,34 @@ function copyLink(btn) {
   });
 }
 
-// ── Track share count ──────────────────────────────────────
+// ── Track share count — updates all counters in real time ──
+var _shareCount = <?= (int)$c['share_count'] ?>;
+
 function trackShare() {
   fetch('<?= BASE ?>/api/campaigns.php?action=track_share', {
-    method:'POST',
-    body: (() => { var fd=new FormData(); fd.append('campaign_id','<?= $cid ?>'); return fd; })()
-  }).catch(()=>{});
+    method: 'POST',
+    body: (() => { var fd = new FormData(); fd.append('campaign_id', '<?= $cid ?>'); return fd; })()
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      _shareCount++;
+      var fmt = _shareCount.toLocaleString();
+      // Update all share count displays
+      var ids = ['shareCountMini', 'shareCountCard', 'shareCountHero'];
+      ids.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.textContent = fmt;
+          // Brief pulse animation
+          el.style.transition = 'color .3s';
+          el.style.color = '#FF6B4A';
+          setTimeout(function() { el.style.color = ''; }, 1000);
+        }
+      });
+    }
+  })
+  .catch(function() {});
 }
 
 // ── Donate button → Pesapal Checkout ──────────────────────────
